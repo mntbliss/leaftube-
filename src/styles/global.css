@@ -202,136 +202,16 @@ body {
   padding: 0;
 }
 
-.player-shell {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-}
-
-.cover-icon {
-  flex: 0 0 80px;
-  height: 80px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, rgba(244, 162, 97, 1), rgba(42, 157, 143, 1));
-}
-
-.player-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.progress-row {
-  display: flex;
-  align-items: center;
-}
-
-.progress-track {
-  position: relative;
-  flex: 1;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  overflow: hidden;
-}
-
-.progress-filled {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(244, 162, 97, 0.9), rgba(42, 157, 143, 0.9));
-}
-
-.controls-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.circle-control {
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(6, 9, 11, 0.8);
-  cursor: pointer;
-  outline: none;
-  transition: background 120ms ease-out, border-color 120ms ease-out, transform 80ms ease-out;
-  -webkit-app-region: no-drag;
-}
-
-.circle-control:hover {
-  background: rgba(10, 15, 18, 0.95);
-}
-
-.circle-control:active {
-  transform: translateY(1px);
-}
-
-.circle-control.is-primary {
-  background: linear-gradient(135deg, #f4a261, #e76f51);
-  border-color: transparent;
-  color: #1b120d;
-}
-
-.icon-prev,
-.icon-next {
-  width: 0;
-  height: 0;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-}
-
-.icon-prev {
-  border-right: 6px solid rgba(255, 255, 255, 0.85);
-}
-
-.icon-next {
-  border-left: 6px solid rgba(255, 255, 255, 0.85);
-}
-
-.icon-play {
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-left: 9px solid #1b120d;
-}
-
-.icon-pause {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 10px;
-  height: 10px;
-  position: relative;
-}
-
-.icon-pause::before,
-.icon-pause::after {
-  content: '';
-  position: absolute;
-  width: 3px;
-  height: 10px;
-  border-radius: 1px;
-  background: #1b120d;
-}
-
-.icon-pause::before {
-  left: 0;
-}
-
-.icon-pause::after {
-  right: 0;
-}
-
 .app-card.is-expanded {
   max-width: none;
   min-height: 220px;
+}
+
+.app-card {
+  transition:
+    border-radius 220ms ease-out,
+    background 220ms ease-out,
+    transform 180ms ease-out;
 }
 
 @media (max-width: 560px) {

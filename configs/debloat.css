@@ -1,0 +1,45 @@
+ytmusic-guide-renderer,
+ytmusic-pivot-bar-renderer,
+#mini-guide {
+  display: none !important;
+}
+
+ytmusic-app-layout {
+  --ytmusic-guide-width: 0px !important;
+}
+
+html,
+body,
+ytmusic-app,
+ytmusic-app-layout,
+ytmusic-player-page,
+#background,
+#layout {
+  background: transparent !important;
+}
+
+ytmusic-app-layout #background {
+  background: rgba(10, 14, 18, 0.5) !important;
+}
+
+ytmusic-nav-bar {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-bottom: none !important;
+}
+
+ytmusic-nav-bar #left-content,
+ytmusic-nav-bar #right-content {
+  opacity: 0.75;
+}
+
+ytmusic-nav-bar #center-content {
+  display: flex !important;
+  justify-content: center;
+}
+
+ytmusic-nav-bar ytmusic-search-box {
+  max-width: 520px;
+  width: 100%;
+}
+
