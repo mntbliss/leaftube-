@@ -1,0 +1,21 @@
+{
+  "name": "leaftube",
+  "version": "0.1.0",
+  "description": "Minimal leaf/tea themed YouTube Music desktop wrapper",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && npm run start",
+    "build": "vite build",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1",
+    "electron": "^41.0.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^6.4.1"
+  }
+}

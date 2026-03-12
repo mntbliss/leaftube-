@@ -1,0 +1,11 @@
+:root {
+  --leaf-primary: #f4a261;
+  --leaf-accent: #2a9d8f;
+  --leaf-background: #101418;
+  --leaf-glass: rgba(0, 0, 0, 0.25);
+  --leaf-no-glass: rgba(10, 14, 18, 0.5);
+  --leaf-border: rgba(255, 255, 255, 0.08);
+  --leaf-text: #fef6e4;
+  --leaf-muted-text: #acb1b6;
+}
+
