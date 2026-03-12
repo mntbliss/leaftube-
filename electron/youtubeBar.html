@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>leafTube bar</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        background: rgba(5, 6, 7, 0.9);
+        color: #fef6e4;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        -webkit-app-region: drag;
+      }
+
+      .bar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        opacity: 0.85;
+      }
+
+      .leaf-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 20%, #f4a261, #e76f51);
+      }
+
+      .bar-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      button {
+        -webkit-app-region: no-drag;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        background: rgba(10, 14, 18, 0.9);
+        color: inherit;
+        font-size: 11px;
+        padding: 4px 10px;
+        cursor: pointer;
+        outline: none;
+        transition:
+          background 140ms ease-out,
+          border-color 140ms ease-out,
+          transform 90ms ease-out;
+      }
+
+      button:hover {
+        background: var(--leaf-background);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar-left">
+      <div class="leaf-dot"></div>
+      <span>🌿</span>
+    </div>
+    <div class="bar-right">
+      <button type="button" onclick="window.leafYoutubeBar?.shrink()">🍃</button>
+    </div>
+  </body>
+</html>
+

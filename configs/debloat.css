@@ -1,45 +1,137 @@
-ytmusic-guide-renderer,
+:root {
+  --leaf-background: rgba(20, 20, 20, 0.9);
+}
+
+/* single flat background for everything */
+html,
+body {
+  background: var(--leaf-background) !important;
+  background-image: none !important;
+}
+
+/* hide pivot bar + mini-guide but keep main guide working */
 ytmusic-pivot-bar-renderer,
 #mini-guide {
   display: none !important;
 }
 
 ytmusic-app-layout {
-  --ytmusic-guide-width: 0px !important;
+  --ytmusic-guide-width: 80px !important;
 }
 
-html,
-body,
+#nav-bar-background {
+  background: var(--leaf-background) !important;
+}
+
+.background-gradient {
+  background: transparent !important;
+}
+
+#logo,
+#header,
+#divider,
+.descriptive-text,
+#nav-bar-divider,
+.ytmusic-logo,
+#mini-guide-background,
+#sign-in-button,
+.cast-button {
+  display: none !important;
+}
+
+/* strip gradients, borders, and shadows from all YT Music content */
+ytmusic-app,
+ytmusic-app * {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
 ytmusic-app,
 ytmusic-app-layout,
 ytmusic-player-page,
+ytmusic-browse-response,
 #background,
-#layout {
+#layout,
+#primary-background,
+#player-background,
+.background-gradient,
+#background-gradient,
+#nav-bar-background,
+.nav-bar-background {
   background: transparent !important;
+  border: none !important;
 }
 
-ytmusic-app-layout #background {
-  background: rgba(10, 14, 18, 0.5) !important;
+/* keep logo hidden */
+ytmusic-brand-logo-renderer {
+  display: none !important;
 }
 
+/* gentle solid strip for search/header so it's still usable */
 ytmusic-nav-bar {
   background: transparent !important;
-  box-shadow: none !important;
   border-bottom: none !important;
-}
-
-ytmusic-nav-bar #left-content,
-ytmusic-nav-bar #right-content {
-  opacity: 0.75;
 }
 
 ytmusic-nav-bar #center-content {
   display: flex !important;
   justify-content: center;
+  background: var(--leaf-background) !important;
 }
 
 ytmusic-nav-bar ytmusic-search-box {
   max-width: 520px;
   width: 100%;
+  background: var(--leaf-background) !important;
 }
 
+/* left nav: icons only, hide text labels */
+ytmusic-guide-entry-renderer .title,
+ytmusic-guide-entry-renderer .subtitle,
+ytmusic-guide-entry-renderer yt-formatted-string {
+  display: none !important;
+}
+
+/* left nav: fixed narrow width with centered icons */
+ytmusic-guide-renderer {
+  width: 80px !important;
+}
+
+ytmusic-guide-entry-renderer {
+  width: 100% !important;
+}
+
+ytmusic-guide-entry-renderer tp-yt-paper-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 0 !important;
+}
+
+ytmusic-guide-entry-renderer .guide-icon {
+  margin: 0 auto !important;
+}
+
+/* replace header "Sign in" text with leaf */
+ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='Sign in'],
+ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='🌿'] {
+  width: auto !important;
+  min-width: 0 !important;
+  font-size: 0 !important;
+  padding: 4px 10px !important;
+}
+
+ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='Sign in']::before,
+ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='🌿']::before {
+  content: '🌿';
+  font-size: 13px;
+}
+
+/* kill immersive hero full-bleed background image (this cringe ass greenish-cyanish type of shit on the back near header) */
+.immersive-background ytmusic-fullbleed-thumbnail-renderer,
+ytmusic-fullbleed-thumbnail-renderer[is-background] {
+  display: none !important;
+  background: transparent !important;
+  background-image: none !important;
+}

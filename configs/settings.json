@@ -1,10 +1,9 @@
 {
   "developer": {
-    "enableDeveloperConsole": true
+    "enableDeveloperConsole": false,
+    "enableYoutubeDeveloperConsole": false
   },
   "window": {
-    "width": 600,
-    "height": 220,
     "minWidth": 480,
     "minHeight": 200,
     "useAcrylic": false
@@ -12,16 +11,14 @@
   "discordRichPresence": {
     "enabledByDefault": true,
     "applicationId": "your_app_id_from_dev_portal",
-    "largeImageKeyListening": "leaf_listening",
-    "largeImageKeyWatching": "leaf_watching"
+    "largeImageKeyListening": "leaf_listening"
   },
   "youtubeMusic": {
     "url": "https://music.youtube.com",
-    "useLegacyAdBlock": true,
     "adBlockExtensionPath": "extensions/ublock"
   },
   "uiText": {
-    "appTitle": "leafTube",
+    "appTitle": "leaftube",
     "subtitle": "tea-leaf calm for your YouTube Music",
     "searchPlaceholder": "Search on YouTube Music",
     "toggleDiscordLabel": "Discord Rich Presence",
