@@ -2,78 +2,80 @@ import { resolve } from 'node:path'
 import { readNowPlaying, clickPlayerButton, seekPlayerToFraction } from './YoutubeHandler.js'
 
 export class YoutubeWindowService {
-  constructor({ BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
-    this.BrowserWindow = BrowserWindow
-    this.BrowserView = BrowserView
-    this.appSettings = appSettings
-    this.rootDirPath = rootDirPath
-    this.youtubeDebloatCss = youtubeDebloatCss
-    this.enableYoutubeDeveloperConsole = Boolean(appSettings.developer?.enableYoutubeDeveloperConsole)
-    this.useVideosInsteadOfPicture = Boolean(appSettings.youtubeMusic?.useVideosInsteadOfPicture)
-    this.pollIntervalMs = Number(appSettings.youtubeMusic?.pollIntervalMs) || 800
-    this.presenceUpdateIntervalMs = Number(appSettings.discordRichPresence?.presenceUpdateIntervalMs) || 5000
+    constructor({ BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
+        this.BrowserWindow = BrowserWindow
+        this.BrowserView = BrowserView
+        this.appSettings = appSettings
+        this.rootDirPath = rootDirPath
+        this.youtubeDebloatCss = youtubeDebloatCss
+        this.enableYoutubeDeveloperConsole = Boolean(appSettings.developer?.enableYoutubeDeveloperConsole)
+        this.useVideosInsteadOfPicture = Boolean(appSettings.youtubeMusic?.useVideosInsteadOfPicture)
+        this.pollIntervalMs = Number(appSettings.youtubeMusic?.pollIntervalMs) || 800
+        this.presenceUpdateIntervalMs = Number(appSettings.discordRichPresence?.presenceUpdateIntervalMs) || 5000
 
-    this.youtubeWindow = undefined
-    this.youtubeView = undefined
-    this.barView = undefined
-    this.barHeight = 40
-  }
-
-  ensureWindow() {
-    if (this.youtubeWindow) {
-      this.youtubeWindow.show()
-      this.youtubeWindow.focus()
-      this.resizeView()
-      return
+        this.youtubeWindow = undefined
+        this.youtubeView = undefined
+        this.barView = undefined
+        this.barHeight = 40
     }
 
-    this.youtubeWindow = new this.BrowserWindow({
-      frame: false,
-      transparent: true,
-      resizable: true,
-      roundedCorners: false,
-      backgroundColor: '#00000000',
-      backgroundMaterial: 'none',
-      webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false
-      }
-    })
+    ensureWindow() {
+        if (this.youtubeWindow) {
+            this.youtubeWindow.show()
+            this.youtubeWindow.focus()
+            this.resizeView()
+            return
+        }
 
-    this.youtubeWindow.maximize()
+        this.youtubeWindow = new this.BrowserWindow({
+            frame: false,
+            transparent: true,
+            resizable: true,
+            roundedCorners: false,
+            backgroundColor: '#00000000',
+            backgroundMaterial: 'none',
+            webPreferences: {
+                contextIsolation: true,
+                nodeIntegration: false,
+            },
+        })
 
-    this.barView = new this.BrowserView({
-      webPreferences: {
-        preload: resolve(this.rootDirPath, 'electron', 'youtubeBarPreload.cjs'),
-        contextIsolation: true,
-        nodeIntegration: false
-      }
-    })
+        this.youtubeWindow.maximize()
 
-    this.youtubeView = new this.BrowserView({
-      webPreferences: {
-        partition: 'persist:youtube',
-        contextIsolation: true,
-        nodeIntegration: false
-      }
-    })
+        this.barView = new this.BrowserView({
+            webPreferences: {
+                preload: resolve(this.rootDirPath, 'electron', 'youtubeBarPreload.cjs'),
+                contextIsolation: true,
+                nodeIntegration: false,
+            },
+        })
 
-    // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
-    // memory leak bad uh-uh
-    this.youtubeView.webContents.setMaxListeners(20)
+        this.youtubeView = new this.BrowserView({
+            webPreferences: {
+                partition: 'persist:youtube',
+                contextIsolation: true,
+                nodeIntegration: false,
+            },
+        })
 
-    this.youtubeWindow.setBrowserView(this.barView)
-    this.youtubeWindow.addBrowserView(this.youtubeView)
-    this.resizeView()
+        // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
+        // memory leak bad uh-uh
+        this.youtubeView.webContents.setMaxListeners(20)
 
-    this.barView.webContents.loadFile(resolve(this.rootDirPath, 'electron', 'youtubeBar.html'))
-    this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url)
+        this.youtubeWindow.setBrowserView(this.barView)
+        this.youtubeWindow.addBrowserView(this.youtubeView)
+        this.resizeView()
 
-    this.youtubeView.webContents.on('dom-ready', () => {
-      this.injectDebloatCss()
+        this.barView.webContents.loadFile(resolve(this.rootDirPath, 'electron', 'youtubeBar.html'))
+        this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url)
 
-      // sidebar: hidden by default; menu button click toggles display none/block
-      this.youtubeView.webContents.executeJavaScript(`
+        this.youtubeView.webContents.on('dom-ready', () => {
+            this.injectDebloatCss()
+
+            // sidebar: hidden by default; menu button click toggles display none/block
+            this.youtubeView.webContents
+                .executeJavaScript(
+                    `
         (function() {
           document.body.classList.add('leaf-guide-hidden')
           function toggleGuide() {
@@ -90,16 +92,24 @@ export class YoutubeWindowService {
           setTimeout(bindMenu, 800)
           new MutationObserver(bindMenu).observe(document.body, { childList: true, subtree: true })
         })()
-      `).catch(() => {})
+      `
+                )
+                .catch(() => {})
 
-      // swap "Sign in" label for a leaf
-      this.youtubeView.webContents.executeJavaScript(`
+            // swap "Sign in" label for a leaf
+            this.youtubeView.webContents
+                .executeJavaScript(
+                    `
         const signInLink = document.querySelector('.sign-in-link')
         if (signInLink) signInLink.innerText = '🍃'
-      `).catch(() => {})
+      `
+                )
+                .catch(() => {})
 
-      if (this.useVideosInsteadOfPicture) {
-        this.youtubeView.webContents.executeJavaScript(`
+            if (this.useVideosInsteadOfPicture) {
+                this.youtubeView.webContents
+                    .executeJavaScript(
+                        `
           function preferVideoMode() {
             if (document.body.classList.contains('video-mode')) return
 
@@ -120,95 +130,95 @@ export class YoutubeWindowService {
 
           preferVideoMode()
           setInterval(preferVideoMode, 3000)
-        `).catch(() => {})
-      }
+        `
+                    )
+                    .catch(() => {})
+            }
 
-      if (this.enableYoutubeDeveloperConsole) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
-    })
+            if (this.enableYoutubeDeveloperConsole) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
+        })
 
-    this.youtubeWindow.on('closed', () => {
-      this.youtubeWindow = undefined
-      this.youtubeView = undefined
-      this.barView = undefined
-    })
-  }
-
-  resizeView() {
-    if (!this.youtubeWindow || !this.youtubeView || !this.barView) return
-
-    const windowBounds = this.youtubeWindow.getBounds()
-
-    this.barView.setBounds({
-      x: 0,
-      y: 0,
-      width: windowBounds.width,
-      height: this.barHeight
-    })
-
-    this.youtubeView.setBounds({
-      x: 0,
-      y: this.barHeight,
-      width: windowBounds.width,
-      height: windowBounds.height - this.barHeight
-    })
-  }
-
-  hideWindow() {
-    if (!this.youtubeWindow) return
-    this.youtubeWindow.hide()
-  }
-
-  injectDebloatCss() {
-    if (!this.youtubeView) return
-    if (!this.youtubeDebloatCss) return
-
-    this.youtubeView.webContents.insertCSS(this.youtubeDebloatCss)
-  }
-
-  startNowPlayingPolling({ onNowPlaying, onPresence }) {
-    let lastPresenceSentAt = 0
-
-    const poll = async () => {
-      if (!this.youtubeView) return
-
-      try {
-        const nowPlaying = await readNowPlaying(this.youtubeView)
-        const watchUrl = this.youtubeView.webContents.getURL()
-
-        if (nowPlaying && typeof watchUrl === 'string') {
-          const videoIdMatch = watchUrl.match(/[?&]v=([^&]+)/)
-          const videoId = videoIdMatch ? videoIdMatch[1] : null
-          if (videoId) {
-            nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-          }
-        }
-
-        if (typeof onPresence === 'function') {
-          const now = Date.now()
-          const isTrackValid = nowPlaying && nowPlaying.title
-          const enoughTimePassed = now - lastPresenceSentAt >= this.presenceUpdateIntervalMs
-
-          if (isTrackValid && enoughTimePassed) {
-            onPresence(nowPlaying, watchUrl)
-            lastPresenceSentAt = now
-          }
-        }
-        if (typeof onNowPlaying === 'function' && nowPlaying) onNowPlaying(nowPlaying)
-      } catch {
-      }
+        this.youtubeWindow.on('closed', () => {
+            this.youtubeWindow = undefined
+            this.youtubeView = undefined
+            this.barView = undefined
+        })
     }
 
-    setInterval(poll, this.pollIntervalMs)
-  }
+    resizeView() {
+        if (!this.youtubeWindow || !this.youtubeView || !this.barView) return
 
-  async clickPlayer(action) {
-    if (!this.youtubeView) return
-    await clickPlayerButton(this.youtubeView, action)
-  }
+        const windowBounds = this.youtubeWindow.getBounds()
 
-  async seekToFraction(fraction) {
-    if (!this.youtubeView) return
-    await seekPlayerToFraction(this.youtubeView, fraction)
-  }
+        this.barView.setBounds({
+            x: 0,
+            y: 0,
+            width: windowBounds.width,
+            height: this.barHeight,
+        })
+
+        this.youtubeView.setBounds({
+            x: 0,
+            y: this.barHeight,
+            width: windowBounds.width,
+            height: windowBounds.height - this.barHeight,
+        })
+    }
+
+    hideWindow() {
+        if (!this.youtubeWindow) return
+        this.youtubeWindow.hide()
+    }
+
+    injectDebloatCss() {
+        if (!this.youtubeView) return
+        if (!this.youtubeDebloatCss) return
+
+        this.youtubeView.webContents.insertCSS(this.youtubeDebloatCss)
+    }
+
+    startNowPlayingPolling({ onNowPlaying, onPresence }) {
+        let lastPresenceSentAt = 0
+
+        const poll = async () => {
+            if (!this.youtubeView) return
+
+            try {
+                const nowPlaying = await readNowPlaying(this.youtubeView)
+                const watchUrl = this.youtubeView.webContents.getURL()
+
+                if (nowPlaying && typeof watchUrl === 'string') {
+                    const videoIdMatch = watchUrl.match(/[?&]v=([^&]+)/)
+                    const videoId = videoIdMatch ? videoIdMatch[1] : null
+                    if (videoId) {
+                        nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+                    }
+                }
+
+                if (typeof onPresence === 'function') {
+                    const now = Date.now()
+                    const isTrackValid = nowPlaying && nowPlaying.title
+                    const enoughTimePassed = now - lastPresenceSentAt >= this.presenceUpdateIntervalMs
+
+                    if (isTrackValid && enoughTimePassed) {
+                        onPresence(nowPlaying, watchUrl)
+                        lastPresenceSentAt = now
+                    }
+                }
+                if (typeof onNowPlaying === 'function' && nowPlaying) onNowPlaying(nowPlaying)
+            } catch {}
+        }
+
+        setInterval(poll, this.pollIntervalMs)
+    }
+
+    async clickPlayer(action) {
+        if (!this.youtubeView) return
+        await clickPlayerButton(this.youtubeView, action)
+    }
+
+    async seekToFraction(fraction) {
+        if (!this.youtubeView) return
+        await seekPlayerToFraction(this.youtubeView, fraction)
+    }
 }
-

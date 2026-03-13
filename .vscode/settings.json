@@ -1,0 +1,79 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "never"
+    },
+    "prettier.enable": true,
+    "prettier.semi": false,
+    "prettier.arrowParens": "avoid",
+    "prettier.bracketSameLine": true,
+    "prettier.bracketSpacing": true,
+    "prettier.vueIndentScriptAndStyle": true,
+    "prettier.singleAttributePerLine": false,
+    "prettier.printWidth": 160,
+    "prettier.singleQuote": true,
+    "prettier.tabWidth": 4,
+    "editor.autoIndent": "full",
+    "editor.formatOnSave": true,
+    "editor.maxTokenizationLineLength": 600,
+    "editor.fontSize": 14,
+    "editor.tabSize": 4,
+    "editor.renderWhitespace": "trailing",
+    "editor.codeLens": true,
+    "editor.matchBrackets": "always",
+    "editor.guides.bracketPairs": false,
+    "editor.cursorBlinking": "smooth",
+    "editor.guides.indentation": false,
+    "editor.lineNumbers": "off",
+    "editor.minimap.autohide":"mouseover",
+    "editor.scrollbar.horizontal": "hidden",
+    "editor.scrollbar.vertical": "hidden",
+    "editor.inlineSuggest.enabled": true,
+    "editor.stickyScroll.enabled": false,
+    "editor.smoothScrolling": true,
+    "files.autoSave": "onFocusChange",
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": true
+    },
+    "editor.insertSpaces": true,
+    "editor.comments.insertSpace": true,
+    "editor.showDeprecated": true,
+    "editor.fontWeight": "300", // i personally like that its more clear view, u can change if your font-weight hella thin (not like it was)
+    "editor.wordBasedSuggestions": "allDocuments",
+    "json.format.enable": true,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    //comment out if green is ugly (i use it in project to digest front-end and back-end)
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#54ce5ad5",
+        "activityBar.background": "#71da76c5",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#71ce79",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#15202b99",
+        "sash.hoverBorder": "#6bdd70d5",
+        "statusBar.background": "#65ca6ace",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#41bb47c4",
+        "statusBarItem.remoteBackground": "#65ca6ac2",
+        "statusBarItem.remoteForeground": "#182b15",
+        "titleBar.activeBackground": "#65ca6acb",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#65ca6a6c",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#65ca6a"
+}

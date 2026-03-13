@@ -1,9 +1,9 @@
 import { BrowserView } from 'electron'
 
 export async function clickPlayerButton(youtubeView, action) {
-  if (!youtubeView || !(youtubeView instanceof BrowserView)) return
+    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
 
-  const script = `
+    const script = `
     (() => {
       const bar = document.querySelector('ytmusic-player-bar')
       if (!bar) return
@@ -31,18 +31,17 @@ export async function clickPlayerButton(youtubeView, action) {
     })()
   `
 
-  try {
-    await youtubeView.webContents.executeJavaScript(script)
-  } catch {
-  }
+    try {
+        await youtubeView.webContents.executeJavaScript(script)
+    } catch {}
 }
 
 export async function seekPlayerToFraction(youtubeView, fraction) {
-  if (!youtubeView || !(youtubeView instanceof BrowserView)) return
+    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
 
-  const safeFraction = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 0
+    const safeFraction = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 0
 
-  const script = `
+    const script = `
     (() => {
       const media = document.querySelector('video') || document.querySelector('audio')
       if (!media || typeof media.duration !== 'number' || media.duration <= 0) return
@@ -55,16 +54,15 @@ export async function seekPlayerToFraction(youtubeView, fraction) {
     })()
   `
 
-  try {
-    await youtubeView.webContents.executeJavaScript(script)
-  } catch {
-  }
+    try {
+        await youtubeView.webContents.executeJavaScript(script)
+    } catch {}
 }
 
 export async function readNowPlaying(youtubeView) {
-  if (!youtubeView || !(youtubeView instanceof BrowserView)) return null
+    if (!youtubeView || !(youtubeView instanceof BrowserView)) return null
 
-  const script = `
+    const script = `
     (() => {
       const titleElement = document.querySelector('ytmusic-player-bar .title')
       const bylineElement = document.querySelector('ytmusic-player-bar .byline')
@@ -109,11 +107,10 @@ export async function readNowPlaying(youtubeView) {
     })()
   `
 
-  try {
-    const result = await youtubeView.webContents.executeJavaScript(script)
-    return result
-  } catch {
-    return null
-  }
+    try {
+        const result = await youtubeView.webContents.executeJavaScript(script)
+        return result
+    } catch {
+        return null
+    }
 }
-

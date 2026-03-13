@@ -11,88 +11,87 @@ import * as DiscordService from './services/DiscordService.js'
 import { registerIpc } from './services/IpcService.js'
 
 export class Launcher {
-  constructor({ app, BrowserWindow, BrowserView, ipcMain, session }) {
-    this.app = app
-    this.BrowserWindow = BrowserWindow
-    this.BrowserView = BrowserView
-    this.ipcMain = ipcMain
-    this.session = session
+    constructor({ app, BrowserWindow, BrowserView, ipcMain, session }) {
+        this.app = app
+        this.BrowserWindow = BrowserWindow
+        this.BrowserView = BrowserView
+        this.ipcMain = ipcMain
+        this.session = session
 
-    const currentFilePath = fileURLToPath(import.meta.url)
-    this.rootDirPath = resolve(currentFilePath, '..', '..')
+        const currentFilePath = fileURLToPath(import.meta.url)
+        this.rootDirPath = resolve(currentFilePath, '..', '..')
 
-    this.appSettings = ConfigService.loadSettings()
-    this.appProfile = ConfigService.loadProfile()
+        this.appSettings = ConfigService.loadSettings()
+        this.appProfile = ConfigService.loadProfile()
 
-    this.useAcrylic = Boolean(this.appSettings.window?.useAcrylic)
-    this.enableDeveloperConsole = Boolean(this.appSettings.developer?.enableDeveloperConsole)
+        this.useAcrylic = Boolean(this.appSettings.window?.useAcrylic)
+        this.enableDeveloperConsole = Boolean(this.appSettings.developer?.enableDeveloperConsole)
 
-    LoggerService.init(this.appSettings)
+        LoggerService.init(this.appSettings)
 
-    this.youtubeDebloatCss = ''
+        this.youtubeDebloatCss = ''
 
-    try {
-      const debloatPath = resolve(this.rootDirPath, 'configs', 'debloat.css')
-      this.youtubeDebloatCss = readFileSync(debloatPath, 'utf8')
-    } catch {
-      LoggerService.log('[Launcher] debloat.css not found or unreadable, skipping YouTube debloat CSS')
+        try {
+            const debloatPath = resolve(this.rootDirPath, 'configs', 'debloat.css')
+            this.youtubeDebloatCss = readFileSync(debloatPath, 'utf8')
+        } catch {
+            LoggerService.log('[Launcher] debloat.css not found or unreadable, skipping YouTube debloat CSS')
+        }
+
+        this.mainWindowService = new MainWindowService({
+            app: this.app,
+            BrowserWindow: this.BrowserWindow,
+            session: this.session,
+            appSettings: this.appSettings,
+            rootDirPath: this.rootDirPath,
+            useAcrylic: this.useAcrylic,
+            enableDeveloperConsole: this.enableDeveloperConsole,
+        })
+
+        this.youtubeWindowService = new YoutubeWindowService({
+            BrowserWindow: this.BrowserWindow,
+            BrowserView: this.BrowserView,
+            appSettings: this.appSettings,
+            rootDirPath: this.rootDirPath,
+            youtubeDebloatCss: this.youtubeDebloatCss,
+        })
+
+        DiscordService.initDiscordService({
+            app: this.app,
+            settings: this.appSettings,
+            profile: this.appProfile,
+            rootPath: this.rootDirPath,
+        })
+
+        process.on('unhandledRejection', error => {
+            LoggerService.errorDump('Unhandled promise rejection', error)
+        })
     }
 
-    this.mainWindowService = new MainWindowService({
-      app: this.app,
-      BrowserWindow: this.BrowserWindow,
-      session: this.session,
-      appSettings: this.appSettings,
-      rootDirPath: this.rootDirPath,
-      useAcrylic: this.useAcrylic,
-      enableDeveloperConsole: this.enableDeveloperConsole
-    })
+    async start() {
+        // Ads + tracking (fromPrebuiltAdsOnly = ads only)
+        const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+        // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
+        blocker.enableBlockingInSession(this.session.fromPartition('persist:youtube'))
 
-    this.youtubeWindowService = new YoutubeWindowService({
-      BrowserWindow: this.BrowserWindow,
-      BrowserView: this.BrowserView,
-      appSettings: this.appSettings,
-      rootDirPath: this.rootDirPath,
-      youtubeDebloatCss: this.youtubeDebloatCss
-    })
+        this.mainWindowService.createMainWindow()
+        DiscordService.scheduleDiscordConnect()
 
-    DiscordService.initDiscordService({
-      app: this.app,
-      settings: this.appSettings,
-      profile: this.appProfile,
-      rootPath: this.rootDirPath
-    })
+        this.youtubeWindowService.startNowPlayingPolling({
+            onNowPlaying: nowPlaying => this.mainWindowService.sendNowPlaying(nowPlaying),
+            onPresence: (nowPlaying, watchUrl) => DiscordService.sendPresenceToRpc(nowPlaying, watchUrl),
+        })
 
-    process.on('unhandledRejection', (error) => {
-      LoggerService.errorDump('Unhandled promise rejection', error)
-    })
-  }
+        registerIpc({
+            ipcMain: this.ipcMain,
+            appSettings: this.appSettings,
+            appProfile: this.appProfile,
+            mainWindowService: this.mainWindowService,
+            youtubeWindowService: this.youtubeWindowService,
+        })
 
-  async start() {
-    // Ads + tracking (fromPrebuiltAdsOnly = ads only)
-    const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
-    // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
-    blocker.enableBlockingInSession(this.session.fromPartition('persist:youtube'))
-
-    this.mainWindowService.createMainWindow()
-    DiscordService.scheduleDiscordConnect()
-
-    this.youtubeWindowService.startNowPlayingPolling({
-      onNowPlaying: (nowPlaying) => this.mainWindowService.sendNowPlaying(nowPlaying),
-      onPresence: (nowPlaying, watchUrl) => DiscordService.sendPresenceToRpc(nowPlaying, watchUrl)
-    })
-
-    registerIpc({
-      ipcMain: this.ipcMain,
-      appSettings: this.appSettings,
-      appProfile: this.appProfile,
-      mainWindowService: this.mainWindowService,
-      youtubeWindowService: this.youtubeWindowService
-    })
-
-    this.app.on('activate', () => {
-      if (this.BrowserWindow.getAllWindows().length === 0) this.mainWindowService.createMainWindow()
-    })
-  }
+        this.app.on('activate', () => {
+            if (this.BrowserWindow.getAllWindows().length === 0) this.mainWindowService.createMainWindow()
+        })
+    }
 }
-
