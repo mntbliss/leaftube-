@@ -1,31 +1,32 @@
 import rpcLib from 'discord-rpc'
 
 const clientId = process.env.DISCORD_CLIENT_ID ? String(process.env.DISCORD_CLIENT_ID) : ''
+const logName = '[discordRpcWorker]'
 
 if (!clientId) {
   // eslint-disable-next-line no-console
-  console.error('[rpcWorker] missing DISCORD_CLIENT_ID, exiting')
+  console.error(`${logName} missing DISCORD_CLIENT_ID, exiting`)
   process.exit(0)
 }
 
 // eslint-disable-next-line no-console
-console.log('[rpcWorker] starting, clientId:', clientId)
+console.log(`${logName} starting, clientId: `, clientId)
 
 const rpc = new rpcLib.Client({ transport: 'ipc' })
 
 rpc.on('ready', () => {
   // eslint-disable-next-line no-console
-  console.log('[rpcWorker] rpc ready')
+  console.log(`${logName} rpc ready`)
 })
 
 rpc.on('error', (error) => {
   // eslint-disable-next-line no-console
-  console.error('[rpcWorker] rpc error', error)
+  console.error(`${logName} rpc error:\n`, error)
 })
 
 rpc.login({ clientId }).catch((error) => {
   // eslint-disable-next-line no-console
-  console.error('[rpcWorker] login failed', error)
+  console.error(`${logName} login failed:\n`, error)
 })
 
 process.on('message', (message) => {
@@ -35,9 +36,19 @@ process.on('message', (message) => {
   const details = '₊˚✧ ◡◠◡◜🌺◝◡◠◡ ✧˚₊'
   const template = 'https://img.youtube.com/vi/<ID_HERE>/maxresdefault.jpg'
 
-  const idMatch = watchUrl.match(/[?&]v=([^&]+)/)
-  const id = idMatch ? idMatch[1] : null
-  const largeImageKey = id ? template.replace('<ID_HERE>', id) : 'leaf_listening'
+  const safeWatchUrl = typeof watchUrl === 'string' ? watchUrl : ''
+  const videoIdMatch = safeWatchUrl.match(/[?&]v=([^&]+)/)
+  const videoId = videoIdMatch ? videoIdMatch[1] : null
+
+  // if we dont have real vid id (yet) AND no thumbnail (ads pretty much)
+  if (!videoId && !thumbnailUrl) return
+
+  let largeImageKey = 'leaf_listening'
+  if (videoId) {
+    largeImageKey = template.replace('<ID_HERE>', videoId)
+  } else if (typeof thumbnailUrl === 'string' && thumbnailUrl) {
+    largeImageKey = thumbnailUrl
+  }
 
   const nowSeconds = Math.floor(Date.now() / 1000)
   const safePosition = typeof positionSeconds === 'number' && isFinite(positionSeconds) ? positionSeconds : 0
@@ -45,25 +56,35 @@ process.on('message', (message) => {
   const activity = {
     details,
     state: title || 'YouTube Music',
-    // try raw thumbnail URL as image key (experimental)
-    largeImageKey: largeImageKey,
+    largeImageKey,
     largeImageText: channel || 'YouTube Music',
     startTimestamp: Math.max(0, nowSeconds - Math.floor(safePosition))
   }
 
-  if (watchUrl && typeof watchUrl === 'string' && watchUrl.includes('music.youtube.com')) {
-    activity.buttons = [{
-      label: isVideo ? 'Watch on YouTube Music' : 'Listen on YouTube Music',
-      url: watchUrl
-    }]
+  if (safeWatchUrl && safeWatchUrl.includes('music.youtube.com')) {
+    let buttons = [
+      {
+        label: isVideo ? String(process.env.WATCH_BUTTON_TEXT) : String(process.env.LISTEN_BUTTON_TEXT),
+        url: safeWatchUrl
+      }
+    ];
+
+    // add only if button actually set
+    if(process.env.CUSTOM_BUTTON_TEXT && process.env.CUSTOM_BUTTON_URL && process.env.CUSTOM_BUTTON_URL.startsWith('https://')) {
+      buttons.push(
+      {
+        label: String(process.env.CUSTOM_BUTTON_TEXT),
+        url: String(process.env.CUSTOM_BUTTON_URL)
+      })
+    }
+
+    activity.buttons = buttons
   }
 
   try {
     rpc.setActivity(activity)
-    // eslint-disable-next-line no-console
-    console.log('[rpcWorker] setActivity ok:', activity.state || '(no state)')
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('[rpcWorker] setActivity failed', error)
+    console.error(`${logName} setActivity failed:\n`, error)
   }
 })

@@ -35,7 +35,11 @@ function startRpcProcess() {
     cwd: rootDirPath,
     env: {
       ...process.env,
-      DISCORD_CLIENT_ID: String(appSettings.discordRichPresence.applicationId)
+      DISCORD_CLIENT_ID: String(appSettings.discordRichPresence.applicationId),
+      WATCH_BUTTON_TEXT: String(appSettings.discordRichPresence.watchButtonText),
+      LISTEN_BUTTON_TEXT: String(appSettings.discordRichPresence.listenButtonText),
+      CUSTOM_BUTTON_TEXT: String(appSettings.discordRichPresence.customButtonText),
+      CUSTOM_BUTTON_URL: String(appSettings.discordRichPresence.customButtonUrl)
     },
     stdio: ['pipe', 'inherit', 'inherit', 'ipc']
   })

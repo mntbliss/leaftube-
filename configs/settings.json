@@ -4,18 +4,26 @@
     "enableYoutubeDeveloperConsole": false
   },
   "window": {
+    "width": 480,
+    "height": 220,
     "minWidth": 480,
-    "minHeight": 200,
+    "minHeight": 220,
     "useAcrylic": false
   },
   "discordRichPresence": {
     "enabledByDefault": true,
     "applicationId": "your_app_id_from_dev_portal",
-    "largeImageKeyListening": "leaf_listening"
+    "largeImageKeyListening": "leaf_listening",
+    "presenceUpdateIntervalMs": 5000,
+    "watchButtonText": "watch 🍃",
+    "listenButtonText": "listen 🍃",
+    "customButtonText": "leaftube 🌿 code",
+    "customButtonUrl": "https://github.com/mntbliss/leaftube-"
   },
   "youtubeMusic": {
     "url": "https://music.youtube.com",
-    "adBlockExtensionPath": "extensions/ublock"
+    "useVideosInsteadOfPicture": true,
+    "pollIntervalMs": 800
   },
   "uiText": {
     "appTitle": "leaftube",
