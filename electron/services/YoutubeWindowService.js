@@ -58,6 +58,10 @@ export class YoutubeWindowService {
       }
     })
 
+    // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
+    // memory leak bad uh-uh
+    this.youtubeView.webContents.setMaxListeners(20)
+
     this.youtubeWindow.setBrowserView(this.barView)
     this.youtubeWindow.addBrowserView(this.youtubeView)
     this.resizeView()
@@ -149,14 +153,6 @@ export class YoutubeWindowService {
     })
   }
 
-  destroyWindow() {
-    if (!this.youtubeWindow) return
-    this.youtubeWindow.close()
-    this.youtubeWindow = undefined
-    this.youtubeView = undefined
-    this.barView = undefined
-  }
-
   hideWindow() {
     if (!this.youtubeWindow) return
     this.youtubeWindow.hide()
@@ -180,10 +176,10 @@ export class YoutubeWindowService {
         const watchUrl = this.youtubeView.webContents.getURL()
 
         if (nowPlaying && typeof watchUrl === 'string') {
-          const idMatch = watchUrl.match(/[?&]v=([^&]+)/)
-          const id = idMatch ? idMatch[1] : null
-          if (id) {
-            nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+          const videoIdMatch = watchUrl.match(/[?&]v=([^&]+)/)
+          const videoId = videoIdMatch ? videoIdMatch[1] : null
+          if (videoId) {
+            nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
           }
         }
 

@@ -37,6 +37,10 @@ export class MainWindowService {
       }
     })
 
+    // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
+    // memory leak bad uh-uh
+    this.mainWindow.webContents.setMaxListeners(20)
+
     const session = this.mainWindow.webContents.session
     session.setPermissionRequestHandler((_webContents, _permission, callback) => {
       callback(false)
