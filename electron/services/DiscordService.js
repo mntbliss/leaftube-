@@ -63,6 +63,7 @@ export function sendPresenceToRpc(nowPlaying, watchUrl) {
       title: nowPlaying.title,
       channel: nowPlaying.channel,
       isVideo: nowPlaying.isVideo,
+      positionSeconds: nowPlaying.positionSeconds,
       watchUrl,
       thumbnailUrl: nowPlaying.thumbnailUrl
     }

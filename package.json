@@ -10,6 +10,8 @@
     "start": "electron ."
   },
   "dependencies": {
+    "@ghostery/adblocker-electron": "^2.14.1",
+    "cross-fetch": "^4.0.0",
     "discord-rpc": "^4.0.1",
     "electron": "^41.0.0",
     "vue": "^3.5.0"

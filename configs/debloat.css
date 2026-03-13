@@ -9,9 +9,8 @@ body {
   background-image: none !important;
 }
 
-/* hide pivot bar + mini-guide but keep main guide working */
-ytmusic-pivot-bar-renderer,
-#mini-guide {
+/* hide pivot bar only; do NOT hide #mini-guide or u cant open navbar by click */
+ytmusic-pivot-bar-renderer {
   display: none !important;
 }
 
@@ -95,6 +94,12 @@ ytmusic-guide-entry-renderer yt-formatted-string {
 /* left nav: fixed narrow width with centered icons */
 ytmusic-guide-renderer {
   width: 80px !important;
+}
+
+/* when body has this class, sidebar is fully hidden; toggled by menu click in JS */
+body.leaf-guide-hidden #mini-guide,
+body.leaf-guide-hidden tp-yt-app-drawer.ytmusic-app {
+  display: none !important;
 }
 
 ytmusic-guide-entry-renderer {

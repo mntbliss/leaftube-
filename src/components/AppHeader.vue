@@ -10,10 +10,7 @@ defineEmits(['toggle-discord', 'toggle-expanded'])
 <template>
   <header class="app-header drag-bar">
     <div class="app-logo-cluster">
-      <div class="leaf-icon">
-        <span class="leaf-shape" />
-      </div>
-      <div class="app-pill" />
+      <div class="leaf-icon">🌿</div>
     </div>
     <div class="app-icon-row">
       <button

@@ -31,13 +31,16 @@ rpc.login({ clientId }).catch((error) => {
 process.on('message', (message) => {
   if (!message || message.type !== 'presence') return
 
-  const { title, channel, isVideo, watchUrl, thumbnailUrl } = message.payload || {}
-  const details = isVideo ? 'Watching' : 'Listening to'
+  const { title, channel, isVideo, watchUrl, thumbnailUrl, positionSeconds } = message.payload || {}
+  const details = '₊˚✧ ◡◠◡◜🌺◝◡◠◡ ✧˚₊'
   const template = 'https://img.youtube.com/vi/<ID_HERE>/maxresdefault.jpg'
 
   const idMatch = watchUrl.match(/[?&]v=([^&]+)/)
   const id = idMatch ? idMatch[1] : null
   const largeImageKey = id ? template.replace('<ID_HERE>', id) : 'leaf_listening'
+
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  const safePosition = typeof positionSeconds === 'number' && isFinite(positionSeconds) ? positionSeconds : 0
 
   const activity = {
     details,
@@ -45,7 +48,7 @@ process.on('message', (message) => {
     // try raw thumbnail URL as image key (experimental)
     largeImageKey: largeImageKey,
     largeImageText: channel || 'YouTube Music',
-    startTimestamp: Math.floor(Date.now() / 1000)
+    startTimestamp: Math.max(0, nowSeconds - Math.floor(safePosition))
   }
 
   if (watchUrl && typeof watchUrl === 'string' && watchUrl.includes('music.youtube.com')) {

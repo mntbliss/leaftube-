@@ -22,7 +22,7 @@ export function registerIpc({ ipcMain, appSettings, appProfile, mainWindowServic
       if (mainWindowService) mainWindowService.hideWindow()
       youtubeWindowService.ensureWindow()
     } else {
-      youtubeWindowService.destroyWindow()
+      youtubeWindowService.hideWindow()
       if (mainWindowService) mainWindowService.showWindow()
     }
 

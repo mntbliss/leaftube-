@@ -1,5 +1,4 @@
 import { resolve } from 'node:path'
-import * as LoggerService from '../../src/services/LoggerService.js'
 
 export class MainWindowService {
   constructor({ app, BrowserWindow, session, appSettings, rootDirPath, useAcrylic, enableDeveloperConsole }) {
@@ -39,24 +38,13 @@ export class MainWindowService {
     })
 
     const session = this.mainWindow.webContents.session
-
-    const adBlockExtensionPath = this.appSettings.youtubeMusic?.adBlockExtensionPath
-    if (adBlockExtensionPath && typeof session.loadExtension === 'function') {
-      const absoluteExtensionPath = resolve(this.rootDirPath, adBlockExtensionPath)
-      session
-        .loadExtension(absoluteExtensionPath)
-        .catch(() => {
-          LoggerService.log('[MainWindowService] failed to load ad-block extension from', absoluteExtensionPath)
-        })
-    }
-
     session.setPermissionRequestHandler((_webContents, _permission, callback) => {
       callback(false)
     })
 
     this.mainWindow.loadFile(resolve(this.rootDirPath, 'dist', 'index.html'))
 
-    if (!this.app.isPackaged || this.enableDeveloperConsole) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
+    if (this.enableDeveloperConsole) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
 
     this.mainWindow.on('closed', () => {
       this.mainWindow = undefined

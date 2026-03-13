@@ -41,7 +41,6 @@ body {
   box-shadow: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
   color: var(--leaf-text);
 }
 
@@ -70,10 +69,9 @@ body {
 }
 
 .leaf-icon {
-  width: 26px;
+  width: 36px;
   height: 26px;
   border-radius: 999px;
-  background: radial-gradient(circle at 30% 20%, #f4a261, #e76f51);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,14 +100,6 @@ body {
   background: rgba(255, 255, 255, 0.55);
 }
 
-.app-pill {
-  width: 64px;
-  height: 18px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(244, 162, 97, 0.6), rgba(42, 157, 143, 0.6));
-  opacity: 0.7;
-}
-
 .app-icon-row {
   display: flex;
   align-items: center;
@@ -117,7 +107,7 @@ body {
 }
 
 .icon-button {
-  width: 26px;
+  width: 36px;
   height: 26px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -214,7 +204,7 @@ body {
     transform 180ms ease-out;
 }
 
-@media (max-width: 560px) {
+@media (min-width: 560px) {
   .app-header {
     flex-direction: column;
     align-items: flex-start;

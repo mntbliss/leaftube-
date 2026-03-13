@@ -9,6 +9,9 @@ export class YoutubeWindowService {
     this.rootDirPath = rootDirPath
     this.youtubeDebloatCss = youtubeDebloatCss
     this.enableYoutubeDeveloperConsole = Boolean(appSettings.developer?.enableYoutubeDeveloperConsole)
+    this.useVideosInsteadOfPicture = Boolean(appSettings.youtubeMusic?.useVideosInsteadOfPicture)
+    this.pollIntervalMs = Number(appSettings.youtubeMusic?.pollIntervalMs) || 800
+    this.presenceUpdateIntervalMs = Number(appSettings.discordRichPresence?.presenceUpdateIntervalMs) || 5000
 
     this.youtubeWindow = undefined
     this.youtubeView = undefined
@@ -49,6 +52,7 @@ export class YoutubeWindowService {
 
     this.youtubeView = new this.BrowserView({
       webPreferences: {
+        partition: 'persist:youtube',
         contextIsolation: true,
         nodeIntegration: false
       }
@@ -64,11 +68,56 @@ export class YoutubeWindowService {
     this.youtubeView.webContents.on('dom-ready', () => {
       this.injectDebloatCss()
 
+      // sidebar: hidden by default; menu button click toggles display none/block
+      this.youtubeView.webContents.executeJavaScript(`
+        (function() {
+          document.body.classList.add('leaf-guide-hidden')
+          function toggleGuide() {
+            document.body.classList.toggle('leaf-guide-hidden')
+          }
+          function bindMenu() {
+            var btn = document.querySelector('ytmusic-nav-bar [aria-label="Guide"], ytmusic-nav-bar button[aria-label*="enu"], ytmusic-nav-bar .left-content button, tp-yt-paper-icon-button.ytmusic-nav-bar')
+            if (btn && !btn._leafBound) {
+              btn._leafBound = true
+              btn.addEventListener('click', function() { setTimeout(toggleGuide, 50) })
+            }
+          }
+          bindMenu()
+          setTimeout(bindMenu, 800)
+          new MutationObserver(bindMenu).observe(document.body, { childList: true, subtree: true })
+        })()
+      `).catch(() => {})
+
       // swap "Sign in" label for a leaf
       this.youtubeView.webContents.executeJavaScript(`
         const signInLink = document.querySelector('.sign-in-link')
         if (signInLink) signInLink.innerText = '🍃'
       `).catch(() => {})
+
+      if (this.useVideosInsteadOfPicture) {
+        this.youtubeView.webContents.executeJavaScript(`
+          function preferVideoMode() {
+            if (document.body.classList.contains('video-mode')) return
+
+            const selectors = [
+              'ytmusic-player-page [role="tab"][aria-label*="Video"]',
+              'ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]',
+              'ytmusic-player-page button[aria-label*="Video"]'
+            ]
+
+            for (const selector of selectors) {
+              const el = document.querySelector(selector)
+              if (el) {
+                el.click()
+                break
+              }
+            }
+          }
+
+          preferVideoMode()
+          setInterval(preferVideoMode, 3000)
+        `).catch(() => {})
+      }
 
       if (this.enableYoutubeDeveloperConsole) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
     })
@@ -108,6 +157,11 @@ export class YoutubeWindowService {
     this.barView = undefined
   }
 
+  hideWindow() {
+    if (!this.youtubeWindow) return
+    this.youtubeWindow.hide()
+  }
+
   injectDebloatCss() {
     if (!this.youtubeView) return
     if (!this.youtubeDebloatCss) return
@@ -116,6 +170,8 @@ export class YoutubeWindowService {
   }
 
   startNowPlayingPolling({ onNowPlaying, onPresence }) {
+    let lastPresenceSentAt = 0
+
     const poll = async () => {
       if (!this.youtubeView) return
 
@@ -123,13 +179,30 @@ export class YoutubeWindowService {
         const nowPlaying = await readNowPlaying(this.youtubeView)
         const watchUrl = this.youtubeView.webContents.getURL()
 
-        if (typeof onPresence === 'function') onPresence(nowPlaying, watchUrl)
+        if (nowPlaying && typeof watchUrl === 'string') {
+          const idMatch = watchUrl.match(/[?&]v=([^&]+)/)
+          const id = idMatch ? idMatch[1] : null
+          if (id) {
+            nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+          }
+        }
+
+        if (typeof onPresence === 'function') {
+          const now = Date.now()
+          const isTrackValid = nowPlaying && nowPlaying.title
+          const enoughTimePassed = now - lastPresenceSentAt >= this.presenceUpdateIntervalMs
+
+          if (isTrackValid && enoughTimePassed) {
+            onPresence(nowPlaying, watchUrl)
+            lastPresenceSentAt = now
+          }
+        }
         if (typeof onNowPlaying === 'function' && nowPlaying) onNowPlaying(nowPlaying)
       } catch {
       }
     }
 
-    setInterval(poll, 2000)
+    setInterval(poll, this.pollIntervalMs)
   }
 
   async clickPlayer(action) {

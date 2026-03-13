@@ -134,12 +134,6 @@ onBeforeUnmount(() => {
           class="progress-filled"
           :style="{ width: progressWidth }"
         />
-        <div
-          class="progress-leaf"
-          :style="{ left: progressWidth }"
-        >
-          🍃
-        </div>
       </div>
     </div>
   </div>
@@ -150,6 +144,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .player-main {
@@ -158,13 +153,17 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .cover-icon {
-  flex: 0 0 80px;
-  height: 80px;
+  flex: 0 0 115px;
+  height: 115px;
   border-radius: 22px;
-  background: linear-gradient(135deg, rgba(244, 162, 97, 1), rgba(42, 157, 143, 1));
+  margin-bottom: 5px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #73f373e6, rgb(250, 193, 119));
   background-size: cover;
   background-position: center;
 }
@@ -206,7 +205,7 @@ onBeforeUnmount(() => {
 }
 
 .circle-control.is-primary {
-  background: linear-gradient(135deg, #f4a261, #e76f51);
+  background: linear-gradient(135deg, #4affc9e6, #ffc04ae6);
   border-color: transparent;
   color: #1b120d;
 }
@@ -265,12 +264,16 @@ onBeforeUnmount(() => {
 .progress-row {
   display: flex;
   align-items: center;
+  justify-self: center;
+  align-self: center;
+  height: 15px;
+  width: 95%;
 }
 
 .progress-track {
   position: relative;
   flex: 1;
-  height: 6px;
+  height: 100%;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
   overflow: hidden;
@@ -285,15 +288,9 @@ onBeforeUnmount(() => {
 .progress-filled {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(244, 162, 97, 0.9), rgba(42, 157, 143, 0.9));
-  transition: width 180ms ease-out;
+  background: linear-gradient(90deg, #ff9b4ae6, #c4ee77e6, #46ce41e6);
+  transition: width 420ms linear;
+  height: 100%;
 }
 
-.progress-leaf {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
-  pointer-events: none;
-}
 </style>

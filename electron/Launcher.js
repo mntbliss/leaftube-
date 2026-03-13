@@ -1,6 +1,8 @@
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
+import { ElectronBlocker } from '@ghostery/adblocker-electron'
+import fetch from 'cross-fetch'
 import { ConfigService } from '../src/services/ConfigService.js'
 import * as LoggerService from '../src/services/LoggerService.js'
 import { MainWindowService } from './services/MainWindowService.js'
@@ -23,7 +25,6 @@ export class Launcher {
     this.appProfile = ConfigService.loadProfile()
 
     this.useAcrylic = Boolean(this.appSettings.window?.useAcrylic)
-    this.adBlockExtensionPath = this.appSettings.youtubeMusic?.adBlockExtensionPath
     this.enableDeveloperConsole = Boolean(this.appSettings.developer?.enableDeveloperConsole)
 
     LoggerService.init(this.appSettings)
@@ -68,6 +69,11 @@ export class Launcher {
   }
 
   async start() {
+    // Ads + tracking (fromPrebuiltAdsOnly = ads only)
+    const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+    // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
+    blocker.enableBlockingInSession(this.session.fromPartition('persist:youtube'))
+
     this.mainWindowService.createMainWindow()
     DiscordService.scheduleDiscordConnect()
 
