@@ -1,86 +1,122 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>leafTube bar</title>
-    <style>
-      :root {
-        color-scheme: dark;
-      }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>leafTube bar</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
 
-      body {
-        width: 100vw;
-        height: 100vh;
-        background: rgba(5, 6, 7, 0.9);
-        color: #fef6e4;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 14px;
-        -webkit-app-region: drag;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      .bar-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        opacity: 0.85;
-      }
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 6, 7, 0.9);
+      color: #fef6e4;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      -webkit-app-region: drag;
+    }
 
-      .leaf-dot {
-        width: 16px;
-        height: 16px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 20%, #f4a261, #e76f51);
-      }
+    .bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      opacity: 0.85;
+    }
 
-      .bar-right {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
+    .leaf-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #f4a261, #e76f51);
+    }
 
-      button {
-        -webkit-app-region: no-drag;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px;
-        background: rgba(10, 14, 18, 0.9);
-        color: inherit;
-        font-size: 11px;
-        padding: 4px 10px;
-        cursor: pointer;
-        outline: none;
-        transition:
-          background 140ms ease-out,
-          border-color 140ms ease-out,
-          transform 90ms ease-out;
-      }
+    .bar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      button:hover {
-        background: var(--leaf-background);
-      }
+    .bar-button {
+      -webkit-app-region: no-drag;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(10, 14, 18, 0.9);
+      color: inherit;
+      font-size: 11px;
+      padding: 4px 10px;
+      cursor: pointer;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background 140ms ease-out,
+        border-color 140ms ease-out,
+        transform 90ms ease-out;
+    }
 
-      button:active {
-        transform: translateY(1px);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="bar-left">
-      <div class="leaf-dot"></div>
-      <span>🌿</span>
-    </div>
-    <div class="bar-right">
-      <button type="button" onclick="window.leafYoutubeBar?.shrink()">🍃</button>
-    </div>
-  </body>
+    .bar-button:hover {
+      background: rgba(20, 24, 28, 0.95);
+    }
+
+    .bar-button:active {
+      transform: translateY(1px);
+    }
+
+    .bar-expand-bars {
+      width: 12px;
+      height: 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      position: relative;
+    }
+
+    .bar-expand-bars::before,
+    .bar-expand-bars::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      height: 1px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .bar-expand-bars::before {
+      top: 3px;
+    }
+
+    .bar-expand-bars::after {
+      bottom: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bar-left">
+    <div class="leaf-dot"></div>
+    <span>🌿</span>
+  </div>
+  <div class="bar-right">
+    <button type="button" class="bar-button" onclick="window.leafYoutubeBar?.openSettings()">⚙</button>
+    <button type="button" class="bar-button" onclick="window.leafYoutubeBar?.shrink()">
+      <span class="bar-expand-bars"></span>
+    </button>
+    <button type="button" class="bar-button" onclick="window.leafYoutubeBar?.closeApp()">✕</button>
+  </div>
+</body>
+
 </html>
-

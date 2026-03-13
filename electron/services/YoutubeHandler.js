@@ -59,6 +59,42 @@ export async function seekPlayerToFraction(youtubeView, fraction) {
     } catch {}
 }
 
+export async function clickPreviousSmart(youtubeView) {
+    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
+
+    const script = `
+    (() => {
+      const bar = document.querySelector('ytmusic-player-bar')
+      const media = document.querySelector('video') || document.querySelector('audio')
+      if (!bar || !media) return
+
+      const current = typeof media.currentTime === 'number' ? media.currentTime : 0
+      if (current > 3) {
+        media.currentTime = 0
+        return
+      }
+
+      const selectors = [
+        '[title="Previous song"]',
+        '[title="Previous"]',
+        '[aria-label*="Previous"]'
+      ]
+
+      for (const selector of selectors) {
+        const button = bar.querySelector(selector)
+        if (button) {
+          button.click()
+          break
+        }
+      }
+    })()
+  `
+
+    try {
+        await youtubeView.webContents.executeJavaScript(script)
+    } catch {}
+}
+
 export async function readNowPlaying(youtubeView) {
     if (!youtubeView || !(youtubeView instanceof BrowserView)) return null
 

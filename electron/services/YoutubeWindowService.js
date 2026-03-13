@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { readNowPlaying, clickPlayerButton, seekPlayerToFraction } from './YoutubeHandler.js'
+import { readNowPlaying, clickPlayerButton, clickPreviousSmart, seekPlayerToFraction } from './YoutubeHandler.js'
 
 export class YoutubeWindowService {
     constructor({ BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
@@ -27,13 +27,15 @@ export class YoutubeWindowService {
             return
         }
 
+        const useAcrylic = Boolean(this.appSettings?.window?.useAcrylic)
+
         this.youtubeWindow = new this.BrowserWindow({
             frame: false,
             transparent: true,
             resizable: true,
-            roundedCorners: false,
+            roundedCorners: useAcrylic ? false : true,
             backgroundColor: '#00000000',
-            backgroundMaterial: 'none',
+            backgroundMaterial: useAcrylic ? 'acrylic' : 'none',
             webPreferences: {
                 contextIsolation: true,
                 nodeIntegration: false,
@@ -101,7 +103,7 @@ export class YoutubeWindowService {
                 .executeJavaScript(
                     `
         const signInLink = document.querySelector('.sign-in-link')
-        if (signInLink) signInLink.innerText = '🍃'
+        if (signInLink) signInLink.innerText = '🚪🍃'
       `
                 )
                 .catch(() => {})
@@ -214,7 +216,8 @@ export class YoutubeWindowService {
 
     async clickPlayer(action) {
         if (!this.youtubeView) return
-        await clickPlayerButton(this.youtubeView, action)
+        if (action === 'previous') await clickPreviousSmart(this.youtubeView)
+        else await clickPlayerButton(this.youtubeView, action)
     }
 
     async seekToFraction(fraction) {

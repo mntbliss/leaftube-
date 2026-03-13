@@ -2,6 +2,7 @@
     import { computed, ref, onMounted } from 'vue'
     import AppHeader from './components/AppHeader.vue'
     import AppPlayer from './components/AppPlayer.vue'
+    import SettingsView from './components/SettingsView.vue'
     import * as LoggerService from './services/LoggerService.js'
 
     const config = ref(null)
@@ -10,9 +11,18 @@
     const isLoadingConfig = ref(true)
     const nowPlaying = ref(null)
 
+    const isSettingsView = typeof window !== 'undefined' && window.location.search.includes('view=settings')
+
     const useAcrylic = computed(() => {
         if (!config.value?.settings?.window) return false
         return Boolean(config.value.settings.window.useAcrylic)
+    })
+
+    const appPadding = computed(() => {
+        const raw = config.value?.settings?.window?.electronPaddingForAnimation
+        const value = Number(raw)
+        if (!Number.isFinite(value) || value < 0) return '10px'
+        return `${value}px`
     })
 
     async function loadConfig() {
@@ -48,18 +58,50 @@
     }
 
     onMounted(() => {
+        if (isSettingsView) return
+
         loadConfig()
-        if (window.desktopBridge?.player?.onNowPlaying)
-            window.desktopBridge.player.onNowPlaying(payload => {
+
+        const onNowPlaying = window.desktopBridge?.player?.onNowPlaying
+        if (onNowPlaying) {
+            onNowPlaying(payload => {
                 nowPlaying.value = payload
             })
+        }
     })
+
+    async function openSettings() {
+        if (window.desktopBridge?.ui?.openSettings) {
+            await window.desktopBridge.ui.openSettings()
+        }
+    }
+
+    async function closeApp() {
+        if (window.desktopBridge?.ui?.closeApp) {
+            await window.desktopBridge.ui.closeApp()
+        }
+    }
 </script>
 
 <template>
-    <div class="app-root">
-        <div class="app-card" :class="{ 'is-expanded': isExpanded, 'is-acrylic': useAcrylic }">
-            <AppHeader :discord-enabled="discordEnabled" :is-expanded="isExpanded" @toggle-discord="toggleDiscord" @toggle-expanded="toggleExpanded" />
+    <div v-if="isSettingsView" class="app-root">
+        <div class="app-card" :style="{ margin: appPadding }">
+            <SettingsView />
+        </div>
+    </div>
+    <div v-else class="app-root">
+        <div
+            :key="'card-' + (isSettingsView ? 'settings' : isExpanded ? 'expanded' : 'collapsed')"
+            class="app-card"
+            :style="{ margin: appPadding }"
+            :class="{ 'is-expanded': isExpanded, 'is-acrylic': useAcrylic }">
+            <AppHeader
+                :discord-enabled="discordEnabled"
+                :is-expanded="isExpanded"
+                @toggle-discord="toggleDiscord"
+                @toggle-expanded="toggleExpanded"
+                @open-settings="openSettings"
+                @close-app="closeApp" />
             <main class="app-main">
                 <AppPlayer :now-playing="nowPlaying" />
             </main>

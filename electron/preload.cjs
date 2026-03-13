@@ -5,6 +5,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         get() {
             return ipcRenderer.invoke('config:get')
         },
+        set(nextSettings) {
+            return ipcRenderer.invoke('config:set', nextSettings)
+        },
     },
     discord: {
         setEnabled(enabled) {
@@ -17,6 +20,17 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         },
         resizeYoutubeView() {
             return ipcRenderer.invoke('ui:resize-youtube-view')
+        },
+        closeApp() {
+            return ipcRenderer.invoke('ui:close-app')
+        },
+        openSettings() {
+            return ipcRenderer.invoke('ui:open-settings')
+        },
+        onOpenSettings(callback) {
+            ipcRenderer.on('ui:open-settings', () => {
+                if (typeof callback === 'function') callback()
+            })
         },
     },
     player: {

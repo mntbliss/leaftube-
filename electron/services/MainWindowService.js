@@ -16,14 +16,17 @@ export class MainWindowService {
     createMainWindow() {
         if (this.mainWindow) return
 
-        const windowWidth = this.appSettings.window?.width ?? 600
-        const windowHeight = this.appSettings.window?.height ?? 220
+        const innerWidth = this.appSettings.window?.width ?? 600
+        const innerHeight = this.appSettings.window?.height ?? 220
+        const padding = Number(this.appSettings.window?.electronPaddingForAnimation) || 10
+        const windowWidth = innerWidth + padding * 2
+        const windowHeight = innerHeight + padding * 2
 
         this.mainWindow = new this.BrowserWindow({
             width: windowWidth,
             height: windowHeight,
-            minWidth: this.appSettings.window.minWidth,
-            minHeight: this.appSettings.window.minHeight,
+            minWidth: (this.appSettings.window.minWidth || innerWidth) + padding * 2,
+            minHeight: (this.appSettings.window.minHeight || innerHeight) + padding * 2,
             frame: false,
             transparent: true,
             resizable: true,

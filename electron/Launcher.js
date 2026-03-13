@@ -7,6 +7,7 @@ import { ConfigService } from '../src/services/ConfigService.js'
 import * as LoggerService from '../src/services/LoggerService.js'
 import { MainWindowService } from './services/MainWindowService.js'
 import { YoutubeWindowService } from './services/YoutubeWindowService.js'
+import { SettingsWindowService } from './services/SettingsWindowService.js'
 import * as DiscordService from './services/DiscordService.js'
 import { registerIpc } from './services/IpcService.js'
 
@@ -56,6 +57,13 @@ export class Launcher {
             youtubeDebloatCss: this.youtubeDebloatCss,
         })
 
+        this.settingsWindowService = new SettingsWindowService({
+            app: this.app,
+            BrowserWindow: this.BrowserWindow,
+            rootDirPath: this.rootDirPath,
+            appSettings: this.appSettings,
+        })
+
         DiscordService.initDiscordService({
             app: this.app,
             settings: this.appSettings,
@@ -84,10 +92,12 @@ export class Launcher {
 
         registerIpc({
             ipcMain: this.ipcMain,
+            app: this.app,
             appSettings: this.appSettings,
             appProfile: this.appProfile,
             mainWindowService: this.mainWindowService,
             youtubeWindowService: this.youtubeWindowService,
+            settingsWindowService: this.settingsWindowService,
         })
 
         this.app.on('activate', () => {

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,6 +31,12 @@ export class ConfigService {
 
     static loadProfile() {
         return ConfigService.load(ConfigType.PROFILE)
+    }
+
+    static saveSettings(updatedSettings) {
+        const absolutePath = resolve(rootDirPath, 'configs', 'settings.json')
+        const json = JSON.stringify(updatedSettings ?? {}, null, 2)
+        writeFileSync(absolutePath, json, 'utf-8')
     }
 }
 
