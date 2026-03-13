@@ -147,9 +147,9 @@ body {
 }
 
 .icon-glyph {
-    display: block;
     line-height: 1;
     transform: translateY(-0.5px);
+    pointer-events: none;
 }
 
 .icon-button:hover {
@@ -170,6 +170,7 @@ body {
     height: 7px;
     border-radius: 999px;
     background: var(--leaf-accent);
+    pointer-events: none;
 }
 
 .icon-toggle.is-on .icon-dot {
@@ -182,6 +183,7 @@ body {
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.6);
     position: relative;
+    pointer-events: none;
 }
 
 .icon-expand .icon-bars::before,

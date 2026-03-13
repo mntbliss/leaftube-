@@ -177,13 +177,13 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: center;
         gap: 8px;
     }
 
     .track-meta {
         align-self: stretch;
-        text-align: right;
+        text-align: center;
         max-width: 100%;
         overflow: hidden;
     }
@@ -230,7 +230,7 @@
     }
 
     .circle-control {
-        width: 26px;
+        width: 48px;
         height: 26px;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.18);
@@ -314,8 +314,8 @@
         align-items: center;
         justify-self: center;
         align-self: center;
-        height: 15px;
-        width: 95%;
+        height: 10px;
+        width: 90%;
     }
 
     .progress-track {
