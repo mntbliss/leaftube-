@@ -29,6 +29,10 @@ export class ConfigService {
         return ConfigService.load(ConfigType.SETTINGS)
     }
 
+    static loadSettingsDefaults() {
+        return readJson('configs/settings-defaults.json')
+    }
+
     static loadProfile() {
         return ConfigService.load(ConfigType.PROFILE)
     }
@@ -37,6 +41,14 @@ export class ConfigService {
         const absolutePath = resolve(rootDirPath, 'configs', 'settings.json')
         const json = JSON.stringify(updatedSettings ?? {}, null, 2)
         writeFileSync(absolutePath, json, 'utf-8')
+    }
+
+    static resetSettingsToDefaults() {
+        const defaults = ConfigService.loadSettingsDefaults()
+        const absolutePath = resolve(rootDirPath, 'configs', 'settings.json')
+        const json = JSON.stringify(defaults ?? {}, null, 2)
+        writeFileSync(absolutePath, json, 'utf-8')
+        return defaults
     }
 }
 

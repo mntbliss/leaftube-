@@ -7,6 +7,10 @@
             type: Object,
             default: null,
         },
+        maxSongTitleLength: {
+            type: Number,
+            default: 36,
+        },
     })
 
     const coverStyle = computed(() => {
@@ -28,7 +32,11 @@
     })
 
     const titleText = computed(() => {
-        return props.nowPlaying?.title || ''
+        const raw = props.nowPlaying?.title || ''
+        const limitRaw = props.maxSongTitleLength
+        const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.max(limitRaw, 8), 128) : 36
+        if (raw.length <= limit) return raw
+        return `${raw.slice(0, limit)}…`
     })
 
     const channelText = computed(() => {

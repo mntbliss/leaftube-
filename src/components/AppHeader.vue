@@ -27,3 +27,47 @@
         </div>
     </header>
 </template>
+
+<style scoped>
+    @keyframes header-item-fade {
+        0% {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .app-logo-cluster,
+    .app-icon-row .icon-button {
+        opacity: 0;
+    }
+
+    .app-logo-cluster {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 300ms;
+    }
+
+    .app-icon-row .icon-button:nth-child(1) {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 450ms;
+    }
+
+    .app-icon-row .icon-button:nth-child(2) {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 600ms;
+    }
+
+    .app-icon-row .icon-button:nth-child(3) {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 750ms;
+    }
+
+    .app-icon-row .icon-button:nth-child(4) {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 900ms;
+    }
+</style>

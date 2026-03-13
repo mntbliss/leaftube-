@@ -36,6 +36,16 @@ body {
     background-image: none !important;
 }
 
+/* fade shell for main YT Music app content */
+body ytmusic-app {
+    opacity: 0 !important;
+    transition: opacity 260ms ease-out !important;
+}
+
+body.leaf-content-visible ytmusic-app {
+    opacity: 1 !important;
+}
+
 /* hide pivot bar only; do NOT hide #mini-guide or u cant open navbar by click */
 ytmusic-pivot-bar-renderer {
     display: none !important;

@@ -24,6 +24,7 @@ export class YoutubeWindowService {
             this.youtubeWindow.show()
             this.youtubeWindow.focus()
             this.resizeView()
+            this.setContentVisible(true)
             return
         }
 
@@ -138,6 +139,8 @@ export class YoutubeWindowService {
             }
 
             if (this.enableYoutubeDeveloperConsole) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
+
+            this.setContentVisible(true)
         })
 
         this.youtubeWindow.on('closed', () => {
@@ -169,7 +172,24 @@ export class YoutubeWindowService {
 
     hideWindow() {
         if (!this.youtubeWindow) return
-        this.youtubeWindow.hide()
+
+        this.setContentVisible(false)
+
+        setTimeout(() => {
+            try {
+                if (this.youtubeWindow) this.youtubeWindow.hide()
+            } catch {}
+        }, 260)
+    }
+
+    setContentVisible(visible) {
+        if (!this.youtubeView) return
+
+        const script = visible
+            ? "document && document.body && document.body.classList.add('leaf-content-visible');"
+            : "document && document.body && document.body.classList.remove('leaf-content-visible');"
+
+        this.youtubeView.webContents.executeJavaScript(`(function(){ try { ${script} } catch(e){} })();`).catch(() => {})
     }
 
     injectDebloatCss() {

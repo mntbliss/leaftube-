@@ -23,6 +23,17 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
         }
     })
 
+    ipcMain.handle('config:reset', async () => {
+        try {
+            const defaults = ConfigService.resetSettingsToDefaults()
+            return { ok: true, settings: defaults }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('[IpcService] config:reset failed', error)
+            throw error
+        }
+    })
+
     ipcMain.handle('discord:set-enabled', async (_event, requestedEnabled) => {
         return DiscordService.updateDiscordEnabled(requestedEnabled)
     })
@@ -51,6 +62,22 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
         if (youtubeWindowService) youtubeWindowService.hideWindow()
         if (mainWindowService) mainWindowService.hideWindow()
         if (app && typeof app.quit === 'function') app.quit()
+        return {}
+    })
+
+    ipcMain.handle('ui:restart-app', async () => {
+        try {
+            if (app && typeof app.relaunch === 'function') {
+                app.relaunch()
+                app.exit(0)
+            } else if (app && typeof app.quit === 'function') {
+                app.quit()
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('[IpcService] ui:restart-app failed', error)
+            throw error
+        }
         return {}
     })
 

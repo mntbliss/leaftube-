@@ -8,6 +8,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         set(nextSettings) {
             return ipcRenderer.invoke('config:set', nextSettings)
         },
+        reset() {
+            return ipcRenderer.invoke('config:reset')
+        },
     },
     discord: {
         setEnabled(enabled) {
@@ -26,6 +29,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         },
         openSettings() {
             return ipcRenderer.invoke('ui:open-settings')
+        },
+        restartApp() {
+            return ipcRenderer.invoke('ui:restart-app')
         },
         onOpenSettings(callback) {
             ipcRenderer.on('ui:open-settings', () => {

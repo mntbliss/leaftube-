@@ -2,7 +2,7 @@
   "developer": {
     "enableDeveloperConsole": false,
     "enableYoutubeDeveloperConsole": false,
-    "enableSettingsDeveloperConsole": true
+    "enableSettingsDeveloperConsole": false
   },
   "window": {
     "width": 480,

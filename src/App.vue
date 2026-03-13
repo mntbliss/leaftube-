@@ -21,8 +21,13 @@
     const appPadding = computed(() => {
         const raw = config.value?.settings?.window?.electronPaddingForAnimation
         const value = Number(raw)
-        if (!Number.isFinite(value) || value < 0) return '10px'
         return `${value}px`
+    })
+
+    const maxSongTitleLength = computed(() => {
+        const raw = config.value?.settings?.youtubeMusic?.maxSongTitleLength
+        const value = Number(raw)
+        return value
     })
 
     async function loadConfig() {
@@ -56,9 +61,9 @@
     }
 
     onMounted(() => {
-        if (isSettingsView) return
+        loadConfig() // needed for settings view
 
-        loadConfig()
+        if (isSettingsView) return
 
         const onNowPlaying = window.desktopBridge?.player?.onNowPlaying
         if (onNowPlaying) {
@@ -90,16 +95,12 @@
 
 <template>
     <div v-if="isSettingsView" class="app-root">
-        <div class="app-card" :style="{ margin: appPadding }">
+        <div class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': useAcrylic }">
             <SettingsView />
         </div>
     </div>
     <div v-else class="app-root">
-        <div
-            :key="'card-main-' + miniPopKey"
-            class="app-card"
-            :style="{ margin: appPadding }"
-            :class="{ 'is-acrylic': useAcrylic }">
+        <div :key="'card-main-' + miniPopKey" class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': useAcrylic }">
             <AppHeader
                 :discord-enabled="discordEnabled"
                 @toggle-discord="toggleDiscord"
@@ -107,7 +108,7 @@
                 @open-settings="openSettings"
                 @close-app="closeApp" />
             <main class="app-main">
-                <AppPlayer :now-playing="nowPlaying" />
+                <AppPlayer :now-playing="nowPlaying" :max-song-title-length="maxSongTitleLength" />
             </main>
         </div>
     </div>

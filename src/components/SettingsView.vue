@@ -39,10 +39,35 @@
             // pure object copy to avoid reference issues
             const plainSettings = JSON.parse(JSON.stringify(settings.value))
             await window.desktopBridge.config.set(plainSettings)
-            closeWindow()
+            if (window.desktopBridge?.ui?.restartApp) {
+                await window.desktopBridge.ui.restartApp()
+            } else {
+                closeWindow()
+            }
         } catch (saveError) {
             LoggerService.errorDump('Failed to save settings', saveError)
             errorText.value = saveError && saveError.message ? saveError.message : 'failed to save settings'
+        } finally {
+            isSaving.value = false
+        }
+    }
+
+    async function resetToDefaults() {
+        isSaving.value = true
+        errorText.value = ''
+        try {
+            if (window.desktopBridge?.config?.reset) {
+                await window.desktopBridge.config.reset()
+            }
+
+            if (window.desktopBridge?.ui?.restartApp) {
+                await window.desktopBridge.ui.restartApp()
+            } else {
+                await loadSettings()
+            }
+        } catch (resetError) {
+            LoggerService.errorDump('Failed to reset settings', resetError)
+            errorText.value = resetError && resetError.message ? resetError.message : 'failed to reset settings'
         } finally {
             isSaving.value = false
         }
@@ -61,7 +86,7 @@
 
             <main class="settings-main">
                 <section v-if="settings" class="settings-section">
-                    <h3>Developer</h3>
+                    <h3>₊˚✧ ◡◠ 🌺 Developer</h3>
                     <label class="settings-row">
                         <span>Enable developer console</span>
                         <input v-model="settings.developer.enableDeveloperConsole" type="checkbox" />
@@ -77,7 +102,7 @@
                 </section>
 
                 <section v-if="settings" class="settings-section">
-                    <h3>Window</h3>
+                    <h3>₊˚✧ ◡◠ 🌺 Window</h3>
                     <label class="settings-row">
                         <span>Width</span>
                         <input v-model.number="settings.window.width" type="number" />
@@ -93,7 +118,7 @@
                 </section>
 
                 <section v-if="settings" class="settings-section">
-                    <h3>Discord presence</h3>
+                    <h3>₊˚✧ ◡◠ 🌺 Discord</h3>
                     <label class="settings-row">
                         <span>Enabled by default</span>
                         <input v-model="settings.discordRichPresence.enabledByDefault" type="checkbox" />
@@ -121,7 +146,7 @@
                 </section>
 
                 <section v-if="settings" class="settings-section">
-                    <h3>YouTube Music</h3>
+                    <h3>₊˚✧ ◡◠ 🌺 YouTube</h3>
                     <label class="settings-row">
                         <span>URL</span>
                         <input v-model="settings.youtubeMusic.url" type="text" />
@@ -130,19 +155,24 @@
                         <span>YT update interval (ms)</span>
                         <input v-model.number="settings.youtubeMusic.pollIntervalMs" type="number" />
                     </label>
+                    <label class="settings-row">
+                        <span>Max song title length</span>
+                        <input v-model.number="settings.youtubeMusic.maxSongTitleLength" type="number" min="8" max="128" />
+                    </label>
                 </section>
 
                 <p v-if="errorText" class="settings-error">{{ errorText }}</p>
             </main>
 
             <footer class="settings-footer">
+                <button class="settings-button" type="button" :disabled="isSaving" @click="resetToDefaults">Reset all 🔄️</button>
                 <button
-                    class="settings-button"
+                    class="settings-button save-button"
                     :class="{ 'is-non-interactable': isSaving || !hasChanges }"
                     type="button"
                     :disabled="isSaving || !hasChanges"
                     @click="saveSettings">
-                    ✏️
+                    💾
                 </button>
             </footer>
         </div>
