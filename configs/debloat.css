@@ -1,5 +1,32 @@
 :root {
     --leaf-background: rgba(20, 20, 20, 0.9);
+    /* scroll: small, green thumb on almost fully black track (injected for YouTube) */
+    --leaf-scroll-track: rgba(17, 17, 17, 0.562);
+    --leaf-scroll-thumb: #50a05c;
+    --leaf-scroll-size: 4px;
+}
+
+:root {
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--leaf-scroll-thumb) var(--leaf-scroll-track) !important;
+}
+
+*::-webkit-scrollbar {
+    width: var(--leaf-scroll-size) !important;
+    height: var(--leaf-scroll-size) !important;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--leaf-scroll-track) !important;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--leaf-scroll-thumb) !important;
+    border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #3df54c !important;
 }
 
 /* single flat background for everything */

@@ -6,6 +6,36 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* scroll: small, green thumb on almost fully black track */
+    --leaf-scroll-track: rgba(17, 17, 17, 0.562);
+    --leaf-scroll-thumb: #50a05c;
+    --leaf-scroll-size: 4px;
+}
+
+:root {
+    scrollbar-width: thin;
+    scrollbar-color: var(--leaf-scroll-thumb) var(--leaf-scroll-track);
+}
+
+*::-webkit-scrollbar {
+    width: var(--leaf-scroll-size);
+    height: var(--leaf-scroll-size);
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--leaf-scroll-track);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--leaf-scroll-thumb);
+    border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #3df54c;
+}
+
 html,
 body,
 #app {
@@ -74,10 +104,6 @@ body {
     background: var(--leaf-glass);
 }
 
-.drag-bar {
-    -webkit-app-region: drag;
-}
-
 .app-header {
     display: flex;
     align-items: center;
@@ -85,6 +111,7 @@ body {
     gap: 12px;
     height: 60px;
     margin: 0px 20px 0px 20px;
+    -webkit-app-region: drag;
 }
 
 .app-logo-cluster {
@@ -134,35 +161,37 @@ body {
     height: 26px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(11, 15, 18, 0.7);
+    background: rgba(11, 15, 18, 0.527);
     color: var(--leaf-text);
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     padding: 0;
     outline: none;
     -webkit-app-region: no-drag;
-    transition: background 140ms ease-out, border-color 140ms ease-out, box-shadow 140ms ease-out, transform 90ms ease-out;
+    transition: all 0.2s;
 }
 
-.icon-glyph {
-    line-height: 1;
-    transform: translateY(-0.5px);
+.icon-image {
+    width: 13px;
+    height: 13px;
+    object-fit: contain;
     pointer-events: none;
+    -webkit-app-region: no-drag;
 }
 
 .icon-button:hover {
     background: rgba(16, 22, 26, 0.9);
 }
 
-.icon-button:active {
+/* .icon-button:active {
     transform: translateY(1px);
-}
+} */
 
 .icon-button.is-on {
     border-color: var(--leaf-primary);
-    background: rgba(244, 162, 97, 0.18);
+    background: rgba(9, 75, 55, 0.76);
 }
 
 .icon-toggle .icon-dot {
@@ -203,10 +232,6 @@ body {
 
 .icon-expand .icon-bars::after {
     bottom: 3px;
-}
-
-.icon-expand.is-on .icon-bars {
-    border-color: var(--leaf-primary);
 }
 
 .icon-gear .icon-gear-shape {
