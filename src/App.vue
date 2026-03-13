@@ -6,10 +6,10 @@
     import * as LoggerService from './services/LoggerService.js'
 
     const config = ref(null)
-    const isExpanded = ref(false)
     const discordEnabled = ref(false)
     const isLoadingConfig = ref(true)
     const nowPlaying = ref(null)
+    const miniPopKey = ref(0)
 
     const isSettingsView = typeof window !== 'undefined' && window.location.search.includes('view=settings')
 
@@ -38,11 +38,9 @@
         }
     }
 
-    async function toggleExpanded() {
-        const next = !isExpanded.value
-        const result = await window.desktopBridge.ui.setExpanded(next)
-        isExpanded.value = result.isExpanded
-        if (result.isExpanded) window.desktopBridge.ui.resizeYoutubeView()
+    async function expandYoutube() {
+        const result = await window.desktopBridge.ui.setExpanded(true)
+        if (result?.isExpanded) window.desktopBridge.ui.resizeYoutubeView()
     }
 
     async function toggleDiscord() {
@@ -68,6 +66,13 @@
                 nowPlaying.value = payload
             })
         }
+
+        const onMiniPop = window.desktopBridge?.ui?.onMiniPop
+        if (onMiniPop) {
+            onMiniPop(() => {
+                miniPopKey.value += 1
+            })
+        }
     })
 
     async function openSettings() {
@@ -91,15 +96,14 @@
     </div>
     <div v-else class="app-root">
         <div
-            :key="'card-' + (isSettingsView ? 'settings' : isExpanded ? 'expanded' : 'collapsed')"
+            :key="'card-main-' + miniPopKey"
             class="app-card"
             :style="{ margin: appPadding }"
-            :class="{ 'is-expanded': isExpanded, 'is-acrylic': useAcrylic }">
+            :class="{ 'is-acrylic': useAcrylic }">
             <AppHeader
                 :discord-enabled="discordEnabled"
-                :is-expanded="isExpanded"
                 @toggle-discord="toggleDiscord"
-                @toggle-expanded="toggleExpanded"
+                @toggle-expanded="expandYoutube"
                 @open-settings="openSettings"
                 @close-app="closeApp" />
             <main class="app-main">

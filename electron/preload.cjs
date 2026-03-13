@@ -32,6 +32,11 @@ contextBridge.exposeInMainWorld('desktopBridge', {
                 if (typeof callback === 'function') callback()
             })
         },
+        onMiniPop(callback) {
+            ipcRenderer.on('ui:mini-pop', () => {
+                if (typeof callback === 'function') callback()
+            })
+        },
     },
     player: {
         playPause() {

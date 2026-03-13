@@ -76,5 +76,10 @@ export class MainWindowService {
         if (!this.mainWindow) return
         this.mainWindow.show()
         this.mainWindow.focus()
+        try {
+            this.mainWindow.webContents.send('ui:mini-pop')
+        } catch {
+            // ignore if renderer is a crybaby
+        }
     }
 }
