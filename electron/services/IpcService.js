@@ -19,10 +19,11 @@ function persistYoutubeVolumeState(youtubeWindowService) {
     }
 }
 
-function registerConfigHandlers(ipcMain, appSettings) {
+function registerConfigHandlers(ipcMain, appSettings, app) {
     ipcMain.handle(IpcChannel.CONFIG_GET, async () => ({
         settings: appSettings,
         discordEnabled: DiscordService.isEnabled,
+        version: app?.getVersion?.() ?? '0.0.0',
     }))
 
     ipcMain.handle(IpcChannel.CONFIG_SET, async (_event, updatedSettings) => {
@@ -197,7 +198,7 @@ function registerLogsHandlers(ipcMain, app) {
 
 export function registerIpc({ ipcMain, app, appSettings, mainWindowService, youtubeWindowService, settingsWindowService }) {
     const expandedState = { isExpanded: false }
-    registerConfigHandlers(ipcMain, appSettings)
+    registerConfigHandlers(ipcMain, appSettings, app)
     registerUiHandlers(ipcMain, expandedState, app, mainWindowService, youtubeWindowService, settingsWindowService)
     registerPlayerHandlers(ipcMain, youtubeWindowService)
     registerLogsHandlers(ipcMain, app)

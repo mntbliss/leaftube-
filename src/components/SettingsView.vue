@@ -4,6 +4,7 @@
 
     const settings = ref(null)
     const originalSettings = ref(null)
+    const appVersion = ref('')
     const isSaving = ref(false)
     const errorText = ref('')
 
@@ -13,6 +14,7 @@
             const safeSettings = loaded?.settings ? JSON.parse(JSON.stringify(loaded.settings)) : {}
             settings.value = safeSettings
             originalSettings.value = JSON.parse(JSON.stringify(safeSettings))
+            appVersion.value = loaded?.version ?? ''
         } catch (loadError) {
             LoggerService.errorDump('Failed to load settings', loadError)
             setErrorFrom(loadError, 'failed to load settings')
@@ -126,7 +128,7 @@
     <div class="settings-root">
         <div class="settings-card">
             <header class="settings-header">
-                <h2>settings</h2>
+                <h2>settings <span v-if="appVersion" class="settings-version">v{{ appVersion }}</span></h2>
                 <button type="button" class="settings-close" @click="closeWindow">×</button>
             </header>
 
