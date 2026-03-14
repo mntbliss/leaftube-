@@ -2,9 +2,12 @@
     --leaf-primary: #76ff8de6;
     --leaf-accent: #2a9d8f;
     --leaf-background: #101418;
+    --leaf-background-secondary: #324735b7;
     --leaf-glass: rgba(0, 0, 0, 0.25);
     --leaf-no-glass: rgba(10, 14, 18, 0.7);
     --leaf-border: rgba(255, 255, 255, 0.08);
     --leaf-text: #fef6e4;
     --leaf-muted-text: #acb1b6;
+    --transition-outline-filter: 0.25s;
+    --outline-shadow-range: 0.4rem;
 }

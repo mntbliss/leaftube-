@@ -206,10 +206,11 @@ input[type='checkbox']:checked::before {
     object-fit: contain;
     pointer-events: none;
     -webkit-app-region: no-drag;
+    transition: filter var(--transition-outline-filter) ease;
 }
 
 .icon-button:hover {
-    background: rgba(16, 22, 26, 0.9);
+    filter: drop-shadow(0 0 var(--outline-shadow-range) var(--leaf-accent));
 }
 
 .icon-button.is-on {
@@ -291,7 +292,6 @@ input[type='checkbox']:checked::before {
     max-width: none;
     min-height: 220px;
 }
-
 
 /* ----- player ----- */
 
@@ -375,65 +375,49 @@ input[type='checkbox']:checked::before {
 }
 
 .volume-mute {
-    flex: 0 0 24px;
+    flex: 0 0 20px;
     height: 20px;
     padding: 0;
     border: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.85);
+    background-size: contain;
+    background-image: url('/icons/mute.png');
     cursor: pointer;
     outline: none;
     display: flex;
     align-items: center;
     justify-content: center;
     -webkit-app-region: no-drag;
+    transition: filter var(--transition-outline-filter) ease;
 }
 
 .volume-mute:hover {
-    color: rgba(255, 255, 255, 1);
+    filter: drop-shadow(0 0 0.2rem var(--leaf-accent));
 }
 
 .volume-mute.is-muted {
-    color: rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-image: url('/icons/unmute.png');
+    transition: filter var(--transition-outline-filter) ease;
 }
 
 .volume-mute.is-muted:hover {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.icon-speaker {
-    width: 8px;
-    height: 10px;
-    position: relative;
-    background: currentColor;
-    border-radius: 1px;
-}
-
-.icon-speaker::before {
-    content: '';
-    position: absolute;
-    left: 100%;
-    top: 50%;
-    margin-top: -3px;
-    width: 0;
-    height: 0;
-    border: 3px solid transparent;
-    border-left: 4px solid currentColor;
+    filter: drop-shadow(0 0 0.2rem var(--leaf-accent));
 }
 
 .volume-track {
     flex: 1;
     height: 6px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--leaf-background-secondary);
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: background 140ms ease-out;
+    transition: background 140ms ease-out, filter var(--transition-outline-filter) ease;
 }
 
 .volume-track:hover {
-    background: rgba(255, 255, 255, 0.22);
+    filter: drop-shadow(0 0 0.2rem var(--leaf-accent));
 }
 
 .volume-filled {
@@ -442,7 +426,7 @@ input[type='checkbox']:checked::before {
     top: 0;
     bottom: 0;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.85));
+    background: linear-gradient(90deg, rgba(128, 255, 223, 0.6), rgba(134, 255, 123, 0.85));
     transition: width 120ms ease-out;
 }
 
@@ -457,12 +441,12 @@ input[type='checkbox']:checked::before {
     background: rgba(6, 9, 11, 0.8);
     cursor: pointer;
     outline: none;
-    transition: background 140ms ease-out, border-color 140ms ease-out, transform 100ms ease-out;
+    transition: background 140ms ease-out, border-color 140ms ease-out, transform 100ms ease-out, filter var(--transition-outline-filter) ease;
     -webkit-app-region: no-drag;
 }
 
 .circle-control:hover {
-    background: rgba(10, 15, 18, 0.95);
+    filter: drop-shadow(0 0 var(--outline-shadow-range) var(--leaf-accent));
 }
 
 .circle-control:active {
@@ -545,22 +529,20 @@ input[type='checkbox']:checked::before {
     background: rgba(255, 255, 255, 0.16);
     overflow: hidden;
     cursor: pointer;
-    transition: background 140ms ease-out;
+    transition: background 140ms ease-out, filter var(--transition-outline-filter) ease-out;
 }
 
 .progress-track:hover {
-    background: rgba(255, 255, 255, 0.22);
+    filter: drop-shadow(0 0 var(--outline-shadow-range) var(--leaf-accent));
 }
 
 .progress-filled {
     position: absolute;
     inset: 0;
     height: 100%;
-    background: linear-gradient(90deg, #ff9b4ae6, #c4ee77e6, #46ce41e6);
+    background: linear-gradient(90deg, #4affe1e6, #77eea5e6, #46ce41e6);
     transition: width 420ms linear;
 }
-
-
 
 /* ----- settings ----- */
 
