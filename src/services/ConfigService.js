@@ -7,9 +7,12 @@ const currentFilePath = fileURLToPath(currentFileUrl)
 const currentDirPath = dirname(currentFilePath)
 const rootDirPath = resolve(currentDirPath, '..', '..')
 
-const ConfigType = {
+export const ConfigType = {
     SETTINGS: 'settings',
-    PROFILE: 'profile',
+}
+
+const configPaths = {
+    [ConfigType.SETTINGS]: 'configs/settings.json',
 }
 
 function readJson(relativePathFromRoot) {
@@ -20,9 +23,8 @@ function readJson(relativePathFromRoot) {
 
 export class ConfigService {
     static load(configType) {
-        if (configType === ConfigType.SETTINGS) return readJson('configs/settings.json')
-        if (configType === ConfigType.PROFILE) return readJson('configs/profile.json')
-        return null
+        const path = configPaths[configType]
+        return path ? readJson(path) : null
     }
 
     static loadSettings() {
@@ -31,10 +33,6 @@ export class ConfigService {
 
     static loadSettingsDefaults() {
         return readJson('configs/settings-defaults.json')
-    }
-
-    static loadProfile() {
-        return ConfigService.load(ConfigType.PROFILE)
     }
 
     static saveSettings(updatedSettings) {
@@ -52,4 +50,3 @@ export class ConfigService {
     }
 }
 
-export { ConfigType }
