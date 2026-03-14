@@ -78,8 +78,10 @@
     }
 
     const logSaveMessage = ref('')
+    const logCopyMessage = ref('')
     async function saveLogs() {
         logSaveMessage.value = ''
+        logCopyMessage.value = ''
         errorText.value = ''
         try {
             const result = await window.desktopBridge?.logs?.save?.()
@@ -91,6 +93,29 @@
         } catch (saveLogsError) {
             LoggerService.errorDump('Save logs failed', saveLogsError)
             setErrorFrom(saveLogsError, 'Failed to save logs')
+        }
+    }
+
+    async function forceQuit() {
+        try {
+            await window.desktopBridge?.ui?.forceQuit?.()
+        } catch (_) {}
+    }
+
+    async function copyLogs() {
+        logCopyMessage.value = ''
+        logSaveMessage.value = ''
+        errorText.value = ''
+        try {
+            const result = await window.desktopBridge?.logs?.copy?.()
+            if (result?.ok) {
+                logCopyMessage.value = 'Copied to clipboard'
+            } else if (result?.ok === false && result?.error) {
+                setErrorFrom(new Error(result.error), 'Failed to copy logs')
+            }
+        } catch (copyLogsError) {
+            LoggerService.errorDump('Copy logs failed', copyLogsError)
+            setErrorFrom(copyLogsError, 'Failed to copy logs')
         }
     }
 
@@ -120,6 +145,9 @@
                         <span>Enable settings devtools</span>
                         <input v-model="settings.developer.isSettingsDeveloperConsoleEnabled" type="checkbox" />
                     </label>
+                    <div class="settings-row">
+                        <button class="settings-button" type="button" @click="forceQuit">force quit 🍂</button>
+                    </div>
                 </section>
 
                 <section v-if="settings" class="settings-section">
@@ -192,11 +220,15 @@
 
                 <p v-if="errorText" class="settings-error">{{ errorText }}</p>
                 <p v-if="logSaveMessage" class="settings-log-saved">{{ logSaveMessage }}</p>
+                <p v-if="logCopyMessage" class="settings-log-saved">{{ logCopyMessage }}</p>
             </main>
 
             <footer class="settings-footer">
-                <button class="settings-button" type="button" :disabled="isSaving" @click="resetToDefaults">reset all 🔄️</button>
-                <button class="settings-button" type="button" :disabled="isSaving" @click="saveLogs">save logs 📃</button>
+                <div class="settings-footer-left">
+                    <button class="settings-button" type="button" :disabled="isSaving" @click="resetToDefaults">reset 🔄️</button>
+                    <button class="settings-button" type="button" :disabled="isSaving" @click="copyLogs">logs copy 📋</button>
+                    <button class="settings-button" type="button" :disabled="isSaving" @click="saveLogs">logs save 📃</button>
+                </div>
                 <button
                     class="settings-button save-button"
                     :class="{ 'is-non-interactable': isSaving || !hasChanges }"

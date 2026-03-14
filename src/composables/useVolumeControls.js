@@ -1,10 +1,11 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { getVolume, setVolume, setMuted } from '../services/YoutubeService.js'
 import { getFractionFromTrackClick } from '../helpers/trackClick.js'
 
 export function useVolumeControls(volumeTrackRef) {
     const volumePercent = ref(100)
     const isMuted = ref(false)
+    let isDragging = false
 
     function setFromPayload(volumeLevel, muted) {
         if (typeof volumeLevel === 'number') {
@@ -32,19 +33,44 @@ export function useVolumeControls(volumeTrackRef) {
         await setMuted(isMuted.value)
     }
 
-    async function handleVolumeClick(event) {
+    function updateVolumeFromEvent(event) {
         const fraction = getFractionFromTrackClick(volumeTrackRef.value, event, volumePercent.value / 100)
         volumePercent.value = Math.round(fraction * 100)
         if (isMuted.value && fraction > 0) {
             isMuted.value = false
-            await setMuted(false)
+            setMuted(false)
         }
-        await setVolume(fraction)
+        setVolume(fraction)
+    }
+
+    async function handleVolumeClick(event) {
+        updateVolumeFromEvent(event)
+    }
+
+    function onWindowMove(event) {
+        if (!isDragging) return
+        updateVolumeFromEvent(event)
+    }
+
+    function onWindowUp(event) {
+        if (!isDragging) return
+        updateVolumeFromEvent(event)
+        isDragging = false
+        window.removeEventListener('mousemove', onWindowMove)
+        window.removeEventListener('mouseup', onWindowUp)
     }
 
     function handleVolumeDown(event) {
-        handleVolumeClick(event)
+        isDragging = true
+        updateVolumeFromEvent(event)
+        window.addEventListener('mousemove', onWindowMove)
+        window.addEventListener('mouseup', onWindowUp)
     }
+
+    onBeforeUnmount(() => {
+        window.removeEventListener('mousemove', onWindowMove)
+        window.removeEventListener('mouseup', onWindowUp)
+    })
 
     return {
         volumePercent,

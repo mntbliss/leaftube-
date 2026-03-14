@@ -640,6 +640,12 @@ input[type='checkbox']:checked::before {
     margin-top: 4px;
 }
 
+.settings-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .settings-button {
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.22);
