@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="docs/images/banner_high.png" alt="" width="350" />
+  <img src="docs/images/banner_high.png" alt="" width="440" />
 </p>
 <!-- <p align="center">
   <sub>⁕～ ✧ ～⁕</sub>
@@ -26,6 +26,9 @@
   
   <img src="docs/screenshots/leaftube6.png" alt="" width="340" />
   <img src="docs/screenshots/leaftube7.png" alt="" width="340" />
+  
+  <img src="docs/screenshots/leaftube8.png" alt="" width="340" />
+  <img src="docs/screenshots/leaftube9.png" alt="" width="340" />
 </p>
 
 <br /><br />
