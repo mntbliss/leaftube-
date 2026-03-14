@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { errorWithBuffer } from './helpers/error-helper.js'
 import { readFileSync } from 'node:fs'
 import { ElectronBlocker } from '@ghostery/adblocker-electron'
 import fetch from 'cross-fetch'
@@ -9,7 +10,9 @@ import { MainWindowService } from './services/MainWindowService.js'
 import { YoutubeWindowService } from './services/YoutubeWindowService.js'
 import { SettingsWindowService } from './services/SettingsWindowService.js'
 import * as DiscordService from './services/DiscordService.js'
+import { TrayService } from './services/TrayService.js'
 import { Path } from './constants/path.js'
+import { getIconPath } from './helpers/window-helpers.js'
 import { registerIpc } from './services/IpcService.js'
 
 export class Launcher {
@@ -72,6 +75,7 @@ export class Launcher {
             rootPath: this.rootDirPath,
         })
 
+        this.trayService = null
     }
 
     async start() {
@@ -83,6 +87,28 @@ export class Launcher {
         this.youtubeWindowService.ensureWindow(false)
 
         this.mainWindowService.createMainWindow()
+
+        const iconPath = getIconPath(this.app, this.rootDirPath)
+        const settingsPath = resolve(ConfigService.getConfigRoot(), 'configs', 'settings.json')
+        errorWithBuffer('[ ♡ startup diagnostics ] iconPath = ', iconPath)
+        errorWithBuffer('[ ♡ startup diagnostics ] resourcesPath = ', process.resourcesPath)
+        errorWithBuffer('[ ♡ startup diagnostics ] exePath = ', this.app.getPath('exe'))
+        errorWithBuffer('[ ♡ startup diagnostics ] settingsPath = ', settingsPath)
+        errorWithBuffer('[ ♡ startup diagnostics ] settings = ', JSON.stringify(ConfigService.loadSettings(), null, 2))
+
+        this.trayService = new TrayService({
+            app: this.app,
+            iconPath,
+            mainWindowService: this.mainWindowService,
+        })
+
+        this.trayService.create()
+
+        this.mainWindowService.setCloseToTrayCallback(() => {
+            this.mainWindowService.hideWindow()
+            this.youtubeWindowService.hideWindow()
+        })
+
         DiscordService.scheduleDiscordConnect()
 
         this.youtubeWindowService.startNowPlayingPolling({

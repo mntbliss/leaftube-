@@ -10,11 +10,11 @@ export function getIconPath(app, rootDirPath) {
     if (!app.isPackaged) return resolve(rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
     const appRoot = dirname(app.getPath('exe'))
     const candidates = [
-        join(process.resourcesPath, 'app.asar.unpacked', Path.BUILD_DIR, Path.ICON_FILENAME),
-        join(process.resourcesPath, '..', Path.BUILD_DIR, Path.ICON_FILENAME),
+        join(process.resourcesPath, Path.BUILD_DIR, Path.ICON_FILENAME),
+        join(process.resourcesPath, Path.ICON_FILENAME),
         join(appRoot, Path.BUILD_DIR, Path.ICON_FILENAME),
-        resolve(app.getAppPath(), Path.BUILD_DIR, Path.ICON_FILENAME).replace('app.asar', 'app.asar.unpacked'),
     ]
+
     for (const path of candidates) {
         if (existsSync(path)) return path
     }

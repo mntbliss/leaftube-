@@ -103,6 +103,12 @@ export class YoutubeWindowService {
             this.setContentVisible(true)
         })
 
+        this.youtubeWindow.on('close', (event) => {
+            if (this.app.leafQuitting) return
+            event.preventDefault()
+            this.hideWindow()
+        })
+
         this.youtubeWindow.on('closed', () => {
             this.youtubeWindow = undefined
             this.youtubeView = undefined

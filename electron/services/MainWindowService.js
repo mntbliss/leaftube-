@@ -14,6 +14,11 @@ export class MainWindowService {
         this.isDeveloperConsoleEnabled = isDeveloperConsoleEnabled
 
         this.mainWindow = undefined
+        this.closeToTrayCallback = null
+    }
+
+    setCloseToTrayCallback(callback) {
+        this.closeToTrayCallback = callback
     }
 
     createMainWindow() {
@@ -51,6 +56,13 @@ export class MainWindowService {
 
         if (this.isDeveloperConsoleEnabled) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
 
+        this.mainWindow.on('close', (event) => {
+            if (this.app.leafQuitting) return
+            if (this.closeToTrayCallback) {
+                event.preventDefault()
+                this.closeToTrayCallback()
+            }
+        })
         this.mainWindow.on('closed', () => {
             this.mainWindow = undefined
         })
