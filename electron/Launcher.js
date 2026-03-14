@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { errorWithBuffer } from './helpers/error-helper.js'
+import { errorWithBuffer, errorWithBufferWithoutTrace } from './helpers/error-helper.js'
 import { readFileSync } from 'node:fs'
 import { ElectronBlocker } from '@ghostery/adblocker-electron'
 import fetch from 'cross-fetch'
@@ -90,11 +90,11 @@ export class Launcher {
 
         const iconPath = getIconPath(this.app, this.rootDirPath)
         const settingsPath = resolve(ConfigService.getConfigRoot(), 'configs', 'settings.json')
-        errorWithBuffer('[ ♡ startup diagnostics ] iconPath = ', iconPath)
-        errorWithBuffer('[ ♡ startup diagnostics ] resourcesPath = ', process.resourcesPath)
-        errorWithBuffer('[ ♡ startup diagnostics ] exePath = ', this.app.getPath('exe'))
-        errorWithBuffer('[ ♡ startup diagnostics ] settingsPath = ', settingsPath)
-        errorWithBuffer('[ ♡ startup diagnostics ] settings = ', JSON.stringify(ConfigService.loadSettings(), null, 2))
+        errorWithBufferWithoutTrace('[ 🍃 startup diagnostics ] iconPath = ', iconPath)
+        errorWithBufferWithoutTrace('[ 🍃 startup diagnostics ] resourcesPath = ', process.resourcesPath)
+        errorWithBufferWithoutTrace('[ 🍃 startup diagnostics ] exePath = ', this.app.getPath('exe'))
+        errorWithBufferWithoutTrace('[ 🍃 startup diagnostics ] settingsPath = ', settingsPath)
+        errorWithBufferWithoutTrace('[ 🍃 startup diagnostics ] settings = ', JSON.stringify(ConfigService.loadSettings(), null, 2))
 
         this.trayService = new TrayService({
             app: this.app,
