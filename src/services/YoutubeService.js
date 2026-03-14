@@ -1,19 +1,34 @@
+function invokePlayer(method, ...args) {
+    const fn = window.desktopBridge?.player?.[method]
+    if (typeof fn !== 'function') return undefined
+    return fn.apply(window.desktopBridge.player, args)
+}
+
 export function playPause() {
-    if (!window.desktopBridge) return
-    return window.desktopBridge.player.playPause()
+    return invokePlayer('playPause')
 }
 
 export function next() {
-    if (!window.desktopBridge) return
-    return window.desktopBridge.player.next()
+    return invokePlayer('next')
 }
 
 export function previous() {
-    if (!window.desktopBridge) return
-    return window.desktopBridge.player.previous()
+    return invokePlayer('previous')
 }
 
 export function seekToFraction(fraction) {
-    if (!window.desktopBridge) return
-    return window.desktopBridge.player.seek(fraction)
+    return invokePlayer('seek', fraction)
+}
+
+export function setVolume(fraction) {
+    return invokePlayer('setVolume', fraction)
+}
+
+export function setMuted(isMuted) {
+    return invokePlayer('setMuted', isMuted)
+}
+
+export function getVolume() {
+    const result = invokePlayer('getVolume')
+    return result != null ? result : Promise.resolve({ volumeLevel: 1, isMuted: false })
 }

@@ -1,8 +1,6 @@
-import { BrowserView } from 'electron'
+import { isValidView, runScriptInView, runScriptInViewReturn } from '../helpers/view-helpers.js'
 
 export async function clickPlayerButton(youtubeView, action) {
-    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
-
     const script = `
     (() => {
       const bar = document.querySelector('ytmusic-player-bar')
@@ -30,15 +28,11 @@ export async function clickPlayerButton(youtubeView, action) {
       }
     })()
   `
-
-    try {
-        await youtubeView.webContents.executeJavaScript(script)
-    } catch {}
+    await runScriptInView(youtubeView, script)
 }
 
 export async function seekPlayerToFraction(youtubeView, fraction) {
-    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
-
+    if (!isValidView(youtubeView)) return
     const safeFraction = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 0
 
     const script = `
@@ -53,15 +47,10 @@ export async function seekPlayerToFraction(youtubeView, fraction) {
       }
     })()
   `
-
-    try {
-        await youtubeView.webContents.executeJavaScript(script)
-    } catch {}
+    await runScriptInView(youtubeView, script)
 }
 
 export async function clickPreviousSmart(youtubeView) {
-    if (!youtubeView || !(youtubeView instanceof BrowserView)) return
-
     const script = `
     (() => {
       const bar = document.querySelector('ytmusic-player-bar')
@@ -89,15 +78,11 @@ export async function clickPreviousSmart(youtubeView) {
       }
     })()
   `
-
-    try {
-        await youtubeView.webContents.executeJavaScript(script)
-    } catch {}
+    await runScriptInView(youtubeView, script)
 }
 
 export async function readNowPlaying(youtubeView) {
-    if (!youtubeView || !(youtubeView instanceof BrowserView)) return null
-
+    if (!isValidView(youtubeView)) return null
     const script = `
     (() => {
       const titleElement = document.querySelector('ytmusic-player-bar .title')
@@ -143,10 +128,57 @@ export async function readNowPlaying(youtubeView) {
     })()
   `
 
-    try {
-        const result = await youtubeView.webContents.executeJavaScript(script)
-        return result
-    } catch {
-        return null
-    }
+    return runScriptInViewReturn(youtubeView, script, null)
+}
+
+export async function setMediaVolume(youtubeView, fraction) {
+    if (!isValidView(youtubeView)) return
+    const safeFraction = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 1
+    const script = `
+    (() => {
+      const media = document.querySelector('video') || document.querySelector('audio')
+      if (media && typeof media.volume !== 'undefined') {
+        media.volume = ${safeFraction}
+      }
+      const bar = document.querySelector('ytmusic-player-bar')
+      if (bar && bar.playerApi_ && typeof bar.playerApi_.setVolume === 'function') {
+        bar.playerApi_.setVolume(Math.round(${safeFraction} * 100))
+      }
+    })()
+  `
+    await runScriptInView(youtubeView, script)
+}
+
+export async function setMediaMuted(youtubeView, isMuted) {
+    if (!isValidView(youtubeView)) return
+    const muted = Boolean(isMuted)
+    const script = `
+    (() => {
+      const media = document.querySelector('video') || document.querySelector('audio')
+      if (media && typeof media.muted !== 'undefined') {
+        media.muted = ${muted}
+      }
+      const bar = document.querySelector('ytmusic-player-bar')
+      if (bar && bar.playerApi_ && typeof bar.playerApi_.setMuted === 'function') {
+        bar.playerApi_.setMuted(${muted})
+      }
+    })()
+  `
+    await runScriptInView(youtubeView, script)
+}
+
+export async function getMediaVolume(youtubeView) {
+    if (!isValidView(youtubeView)) return { volumeLevel: 1, isMuted: false }
+    const script = `
+    (() => {
+      const media = document.querySelector('video') || document.querySelector('audio')
+      if (!media) return { volumeLevel: 1, isMuted: false }
+      return {
+        volumeLevel: typeof media.volume === 'number' ? Math.max(0, Math.min(1, media.volume)) : 1,
+        isMuted: Boolean(media.muted)
+      }
+    })()
+  `
+
+    return runScriptInViewReturn(youtubeView, script, { volumeLevel: 1, isMuted: false })
 }

@@ -1,16 +1,24 @@
 import * as DiscordService from './DiscordService.js'
 import { ConfigService } from '../../src/services/ConfigService.js'
 
-export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowService, youtubeWindowService, settingsWindowService }) {
-    let isExpanded = false
+function persistYoutubeVolumeState(youtubeWindowService) {
+    try {
+        const settings = ConfigService.loadSettings()
+        if (!settings.youtubeMusic) settings.youtubeMusic = {}
+        settings.youtubeMusic.volumeLevel = youtubeWindowService.lastVolume
+        settings.youtubeMusic.isMuted = youtubeWindowService.wasLastMuted
+        ConfigService.saveSettings(settings)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[IpcService] persist volume/muted failed', error)
+    }
+}
 
-    ipcMain.handle('config:get', async () => {
-        return {
-            settings: appSettings,
-            profile: appProfile,
-            discordEnabled: DiscordService.isEnabled,
-        }
-    })
+function registerConfigHandlers(ipcMain, appSettings) {
+    ipcMain.handle('config:get', async () => ({
+        settings: appSettings,
+        discordEnabled: DiscordService.isEnabled,
+    }))
 
     ipcMain.handle('config:set', async (_event, updatedSettings) => {
         try {
@@ -33,23 +41,23 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
             throw error
         }
     })
+}
 
+function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, youtubeWindowService, settingsWindowService) {
     ipcMain.handle('discord:set-enabled', async (_event, requestedEnabled) => {
         return DiscordService.updateDiscordEnabled(requestedEnabled)
     })
 
     ipcMain.handle('ui:set-expanded', async (_event, expanded) => {
-        isExpanded = Boolean(expanded)
-
-        if (isExpanded) {
-            if (mainWindowService) mainWindowService.hideWindow()
-            youtubeWindowService.ensureWindow()
-        } else {
+        expandedState.isExpanded = Boolean(expanded)
+        if (!expandedState.isExpanded) {
             youtubeWindowService.hideWindow()
             if (mainWindowService) mainWindowService.showWindow()
+            return { isExpanded: expandedState.isExpanded }
         }
-
-        return { isExpanded }
+        if (mainWindowService) mainWindowService.hideWindow()
+        youtubeWindowService.ensureWindow()
+        return { isExpanded: expandedState.isExpanded }
     })
 
     ipcMain.handle('ui:resize-youtube-view', async () => {
@@ -61,7 +69,8 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
         if (settingsWindowService) settingsWindowService.hideWindow()
         if (youtubeWindowService) youtubeWindowService.hideWindow()
         if (mainWindowService) mainWindowService.hideWindow()
-        if (app && typeof app.quit === 'function') app.quit()
+        if (!app || typeof app.quit !== 'function') return {}
+        app.quit()
         return {}
     })
 
@@ -70,9 +79,9 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
             if (app && typeof app.relaunch === 'function') {
                 app.relaunch()
                 app.exit(0)
-            } else if (app && typeof app.quit === 'function') {
-                app.quit()
+                return {}
             }
+            if (app && typeof app.quit === 'function') app.quit()
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('[IpcService] ui:restart-app failed', error)
@@ -85,7 +94,9 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
         if (settingsWindowService) settingsWindowService.ensureWindow()
         return {}
     })
+}
 
+function registerPlayerHandlers(ipcMain, youtubeWindowService) {
     ipcMain.handle('player:play-pause', async () => {
         await youtubeWindowService.clickPlayer('playPause')
         return {}
@@ -105,4 +116,27 @@ export function registerIpc({ ipcMain, app, appSettings, appProfile, mainWindowS
         await youtubeWindowService.seekToFraction(fraction)
         return {}
     })
+
+    ipcMain.handle('player:set-volume', async (_event, fraction) => {
+        await youtubeWindowService.setVolume(fraction)
+        persistYoutubeVolumeState(youtubeWindowService)
+        return {}
+    })
+
+    ipcMain.handle('player:set-muted', async (_event, isMuted) => {
+        await youtubeWindowService.setMuted(isMuted)
+        persistYoutubeVolumeState(youtubeWindowService)
+        return {}
+    })
+
+    ipcMain.handle('player:get-volume', async () => {
+        return youtubeWindowService.getVolume()
+    })
+}
+
+export function registerIpc({ ipcMain, app, appSettings, mainWindowService, youtubeWindowService, settingsWindowService }) {
+    const expandedState = { isExpanded: false }
+    registerConfigHandlers(ipcMain, appSettings)
+    registerUiHandlers(ipcMain, expandedState, app, mainWindowService, youtubeWindowService, settingsWindowService)
+    registerPlayerHandlers(ipcMain, youtubeWindowService)
 }

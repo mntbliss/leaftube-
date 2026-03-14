@@ -57,6 +57,15 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         seek(fraction) {
             return ipcRenderer.invoke('player:seek', fraction)
         },
+        setVolume(fraction) {
+            return ipcRenderer.invoke('player:set-volume', fraction)
+        },
+        setMuted(isMuted) {
+            return ipcRenderer.invoke('player:set-muted', isMuted)
+        },
+        getVolume() {
+            return ipcRenderer.invoke('player:get-volume')
+        },
         onNowPlaying(callback) {
             ipcRenderer.on('player:now-playing', (_event, payload) => {
                 if (typeof callback === 'function') callback(payload)

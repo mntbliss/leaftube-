@@ -23,10 +23,9 @@ export class Launcher {
         this.rootDirPath = resolve(currentFilePath, '..', '..')
 
         this.appSettings = ConfigService.loadSettings()
-        this.appProfile = ConfigService.loadProfile()
 
-        this.useAcrylic = Boolean(this.appSettings.window?.useAcrylic)
-        this.enableDeveloperConsole = Boolean(this.appSettings.developer?.enableDeveloperConsole)
+        this.isAcrylic = Boolean(this.appSettings.window?.isAcrylic)
+        this.isDeveloperConsoleEnabled = Boolean(this.appSettings.developer?.isDeveloperConsoleEnabled)
 
         LoggerService.init(this.appSettings)
 
@@ -45,8 +44,8 @@ export class Launcher {
             session: this.session,
             appSettings: this.appSettings,
             rootDirPath: this.rootDirPath,
-            useAcrylic: this.useAcrylic,
-            enableDeveloperConsole: this.enableDeveloperConsole,
+            isAcrylic: this.isAcrylic,
+            isDeveloperConsoleEnabled: this.isDeveloperConsoleEnabled,
         })
 
         this.youtubeWindowService = new YoutubeWindowService({
@@ -67,7 +66,6 @@ export class Launcher {
         DiscordService.initDiscordService({
             app: this.app,
             settings: this.appSettings,
-            profile: this.appProfile,
             rootPath: this.rootDirPath,
         })
 
@@ -82,6 +80,8 @@ export class Launcher {
         // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
         blocker.enableBlockingInSession(this.session.fromPartition('persist:youtube'))
 
+        this.youtubeWindowService.ensureWindow(false)
+
         this.mainWindowService.createMainWindow()
         DiscordService.scheduleDiscordConnect()
 
@@ -94,7 +94,6 @@ export class Launcher {
             ipcMain: this.ipcMain,
             app: this.app,
             appSettings: this.appSettings,
-            appProfile: this.appProfile,
             mainWindowService: this.mainWindowService,
             youtubeWindowService: this.youtubeWindowService,
             settingsWindowService: this.settingsWindowService,

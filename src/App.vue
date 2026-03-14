@@ -13,9 +13,9 @@
 
     const isSettingsView = typeof window !== 'undefined' && window.location.search.includes('view=settings')
 
-    const useAcrylic = computed(() => {
+    const isAcrylic = computed(() => {
         if (!config.value?.settings?.window) return false
-        return Boolean(config.value.settings.window.useAcrylic)
+        return Boolean(config.value.settings.window.isAcrylic)
     })
 
     const appPadding = computed(() => {
@@ -81,26 +81,24 @@
     })
 
     async function openSettings() {
-        if (window.desktopBridge?.ui?.openSettings) {
-            await window.desktopBridge.ui.openSettings()
-        }
+        if (!window.desktopBridge?.ui?.openSettings) return
+        await window.desktopBridge.ui.openSettings()
     }
 
     async function closeApp() {
-        if (window.desktopBridge?.ui?.closeApp) {
-            await window.desktopBridge.ui.closeApp()
-        }
+        if (!window.desktopBridge?.ui?.closeApp) return
+        await window.desktopBridge.ui.closeApp()
     }
 </script>
 
 <template>
     <div v-if="isSettingsView" class="app-root">
-        <div class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': useAcrylic }">
+        <div class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': isAcrylic }">
             <SettingsView />
         </div>
     </div>
     <div v-else class="app-root">
-        <div :key="'card-main-' + miniPopKey" class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': useAcrylic }">
+        <div :key="'card-main-' + miniPopKey" class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': isAcrylic }">
             <AppHeader
                 :discord-enabled="discordEnabled"
                 @toggle-discord="toggleDiscord"

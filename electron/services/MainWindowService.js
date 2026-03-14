@@ -1,14 +1,15 @@
 import { resolve } from 'node:path'
+import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 
 export class MainWindowService {
-    constructor({ app, BrowserWindow, session, appSettings, rootDirPath, useAcrylic, enableDeveloperConsole }) {
+    constructor({ app, BrowserWindow, session, appSettings, rootDirPath, isAcrylic, isDeveloperConsoleEnabled }) {
         this.app = app
         this.BrowserWindow = BrowserWindow
         this.session = session
         this.appSettings = appSettings
         this.rootDirPath = rootDirPath
-        this.useAcrylic = useAcrylic
-        this.enableDeveloperConsole = enableDeveloperConsole
+        this.isAcrylic = isAcrylic
+        this.isDeveloperConsoleEnabled = isDeveloperConsoleEnabled
 
         this.mainWindow = undefined
     }
@@ -22,22 +23,15 @@ export class MainWindowService {
         const windowWidth = innerWidth + padding * 2
         const windowHeight = innerHeight + padding * 2
 
+        const preloadPath = resolve(this.rootDirPath, 'electron', 'preload.cjs')
         this.mainWindow = new this.BrowserWindow({
             width: windowWidth,
             height: windowHeight,
             minWidth: (this.appSettings.window.minWidth || innerWidth) + padding * 2,
             minHeight: (this.appSettings.window.minHeight || innerHeight) + padding * 2,
-            frame: false,
-            transparent: true,
             resizable: true,
-            roundedCorners: this.useAcrylic ? false : true,
-            backgroundColor: '#00000000',
-            backgroundMaterial: this.useAcrylic ? 'acrylic' : 'none',
-            webPreferences: {
-                preload: resolve(this.rootDirPath, 'electron', 'preload.cjs'),
-                contextIsolation: true,
-                nodeIntegration: false,
-            },
+            ...getTransparentFrameOptions(this.isAcrylic),
+            webPreferences: getWebPreferences({ preloadPath }),
         })
 
         // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
@@ -51,7 +45,7 @@ export class MainWindowService {
 
         this.mainWindow.loadFile(resolve(this.rootDirPath, 'dist', 'index.html'))
 
-        if (this.enableDeveloperConsole) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
+        if (this.isDeveloperConsoleEnabled) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
 
         this.mainWindow.on('closed', () => {
             this.mainWindow = undefined

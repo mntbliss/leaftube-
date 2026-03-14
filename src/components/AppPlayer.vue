@@ -73,9 +73,7 @@
                         type="button"
                         :class="{ 'is-muted': isMuted }"
                         :aria-label="isMuted ? 'Unmute' : 'Mute'"
-                        @click="handleMuteClick">
-                        <span class="icon-speaker" />
-                    </button>
+                        @click="handleMuteClick"></button>
                     <div
                         ref="volumeTrackRef"
                         class="volume-track"
@@ -86,9 +84,7 @@
                         tabindex="0"
                         @click="handleVolumeClick"
                         @mousedown="handleVolumeDown">
-                        <div
-                            class="volume-filled"
-                            :style="{ width: (isMuted ? 0 : volumePercent) + '%' }" />
+                        <div class="volume-filled" :style="{ width: (isMuted ? 0 : volumePercent) + '%' }" />
                     </div>
                 </div>
             </div>
