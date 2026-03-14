@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { Path } from '../constants/path.js'
-import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
+import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 
 export class SettingsWindowService {
     constructor({ app, BrowserWindow, rootDirPath, appSettings }) {
@@ -26,7 +26,7 @@ export class SettingsWindowService {
 
         const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
         const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
-        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
+        const iconPath = getIconPath(this.app, this.rootDirPath)
         this.settingsWindow = new this.BrowserWindow({
             width,
             height,

@@ -23,6 +23,7 @@ export class Launcher {
         const currentFilePath = fileURLToPath(import.meta.url)
         this.rootDirPath = resolve(currentFilePath, '..', '..')
 
+        if (this.app.isPackaged) ConfigService.setConfigDir(this.app.getPath('userData'))
         this.appSettings = ConfigService.loadSettings()
 
         this.isAcrylic = Boolean(this.appSettings.window?.isAcrylic)
@@ -50,6 +51,7 @@ export class Launcher {
         })
 
         this.youtubeWindowService = new YoutubeWindowService({
+            app: this.app,
             BrowserWindow: this.BrowserWindow,
             BrowserView: this.BrowserView,
             appSettings: this.appSettings,

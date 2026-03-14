@@ -2,11 +2,12 @@ import { resolve } from 'node:path'
 import { Path } from '../constants/path.js'
 import { PlayerAction } from '../constants/player-actions.js'
 import { runScriptInView } from '../helpers/view-helpers.js'
-import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
+import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 import { readNowPlaying, clickPlayerButton, clickPreviousSmart, seekPlayerToFraction, setMediaVolume, setMediaMuted, getMediaVolume } from './YoutubeHandler.js'
 
 export class YoutubeWindowService {
-    constructor({ BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
+    constructor({ app, BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
+        this.app = app
         this.BrowserWindow = BrowserWindow
         this.BrowserView = BrowserView
         this.appSettings = appSettings
@@ -39,7 +40,7 @@ export class YoutubeWindowService {
         }
 
         const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
-        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
+        const iconPath = getIconPath(this.app, this.rootDirPath)
         this.youtubeWindow = new this.BrowserWindow({
             show: false,
             resizable: true,

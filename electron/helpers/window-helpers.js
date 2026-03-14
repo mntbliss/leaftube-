@@ -1,3 +1,26 @@
+import { join, resolve, dirname } from 'node:path'
+import { existsSync } from 'node:fs'
+import { Path } from '../constants/path.js'
+
+/**
+ * icon path for window icon
+ * packaged: use process.resourcesPath so it works for both portable and NSIS install
+ */
+export function getIconPath(app, rootDirPath) {
+    if (!app.isPackaged) return resolve(rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
+    const appRoot = dirname(app.getPath('exe'))
+    const candidates = [
+        join(process.resourcesPath, 'app.asar.unpacked', Path.BUILD_DIR, Path.ICON_FILENAME),
+        join(process.resourcesPath, '..', Path.BUILD_DIR, Path.ICON_FILENAME),
+        join(appRoot, Path.BUILD_DIR, Path.ICON_FILENAME),
+        resolve(app.getAppPath(), Path.BUILD_DIR, Path.ICON_FILENAME).replace('app.asar', 'app.asar.unpacked'),
+    ]
+    for (const path of candidates) {
+        if (existsSync(path)) return path
+    }
+    return candidates[0]
+}
+
 /**
  * shared window options for all windows
  */

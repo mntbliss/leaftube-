@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { IpcChannel } from '../constants/ipc-channels.js'
 import { Path } from '../constants/path.js'
-import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
+import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 
 export class MainWindowService {
     constructor({ app, BrowserWindow, session, appSettings, rootDirPath, isAcrylic, isDeveloperConsoleEnabled }) {
@@ -26,7 +26,7 @@ export class MainWindowService {
         const windowHeight = innerHeight + padding * 2
 
         const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
-        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
+        const iconPath = getIconPath(this.app, this.rootDirPath)
         this.mainWindow = new this.BrowserWindow({
             width: windowWidth,
             height: windowHeight,

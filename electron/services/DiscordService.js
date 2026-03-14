@@ -1,19 +1,18 @@
-import { resolve } from 'node:path'
-import { spawn } from 'node:child_process'
-import { Path } from '../constants/path.js'
+import discordRpc from 'discord-rpc'
 import * as LoggerService from '../../src/services/LoggerService.js'
+import { errorWithBuffer } from '../helpers/error-helper.js'
+import { buildDiscordActivity } from '../helpers/discord-activity.js'
 
 export let isEnabled = false
 
 let appSettings
-let rootDirPath
 let electronApp
-let rpcProcess
+let rpcClient
+let rpcReady = false
 
 export function initDiscordService({ app, settings, rootPath }) {
     electronApp = app
     appSettings = settings
-    rootDirPath = rootPath
 
     isEnabled = Boolean(appSettings.discordRichPresence?.isEnabledByDefault)
 }
@@ -21,31 +20,33 @@ export function initDiscordService({ app, settings, rootPath }) {
 export function scheduleDiscordConnect() {
     if (!isEnabled || !appSettings?.discordRichPresence?.applicationId) return
     setTimeout(() => {
-        if (isEnabled && appSettings.discordRichPresence.applicationId) startRpcProcess()
+        if (isEnabled && appSettings.discordRichPresence.applicationId) startRpcClient()
     }, 1500)
 }
 
-function startRpcProcess() {
-    if (rpcProcess) return
+function startRpcClient() {
+    if (rpcClient) return
     if (!isEnabled || !appSettings.discordRichPresence.applicationId) return
 
-    const rpcPath = resolve(rootDirPath, Path.ELECTRON_DIR, Path.RPC_WORKER_FILENAME)
-    rpcProcess = spawn(electronApp.getPath('exe'), [rpcPath], {
-        cwd: rootDirPath,
-        env: {
-            ...process.env,
-            DISCORD_CLIENT_ID: String(appSettings.discordRichPresence.applicationId),
-            WATCH_BUTTON_TEXT: String(appSettings.discordRichPresence.watchButtonText),
-            LISTEN_BUTTON_TEXT: String(appSettings.discordRichPresence.listenButtonText),
-            CUSTOM_BUTTON_TEXT: String(appSettings.discordRichPresence.customButtonText),
-            CUSTOM_BUTTON_URL: String(appSettings.discordRichPresence.customButtonUrl),
-            DISCORD_IDLE_STATE_TEXT: String(appSettings.discordRichPresence.idleStateText ?? '🌸'),
-            DISCORD_IDLE_LARGE_IMAGE_TEXT: String(appSettings.discordRichPresence.idleLargeImageText ?? '🌺'),
-        },
-        stdio: ['pipe', 'inherit', 'inherit', 'ipc'],
+    const clientId = String(appSettings.discordRichPresence.applicationId)
+    rpcReady = false
+    rpcClient = new discordRpc.Client({ transport: 'ipc' })
+
+    rpcClient.on('ready', () => {
+        rpcReady = true
+        LoggerService.log('[DiscordService] RPC ready')
     })
-    rpcProcess.on('exit', () => {
-        rpcProcess = undefined
+
+    rpcClient.on('error', (err) => {
+        errorWithBuffer('[DiscordService] RPC error', err?.message ?? err)
+        rpcClient = undefined
+        rpcReady = false
+    })
+
+    rpcClient.login({ clientId }).catch((err) => {
+        errorWithBuffer('[DiscordService] RPC login failed', err?.message ?? err)
+        rpcClient = undefined
+        rpcReady = false
     })
 }
 
@@ -59,12 +60,10 @@ export function updateDiscordEnabled(requestedEnabled) {
 }
 
 export function sendPresenceToRpc(nowPlaying, watchUrl) {
-    if (!rpcProcess) return
-    if (!isEnabled || !nowPlaying) return
-
-    rpcProcess.send({
-        type: 'presence',
-        payload: {
+    if (!rpcClient || !rpcReady || !isEnabled || !nowPlaying) return
+    const opts = appSettings?.discordRichPresence ?? {}
+    const activity = buildDiscordActivity(
+        {
             title: nowPlaying.title,
             channel: nowPlaying.channel,
             isVideo: nowPlaying.isVideo,
@@ -72,5 +71,20 @@ export function sendPresenceToRpc(nowPlaying, watchUrl) {
             watchUrl,
             thumbnailUrl: nowPlaying.thumbnailUrl,
         },
-    })
+        {
+            watchButtonText: opts.watchButtonText,
+            listenButtonText: opts.listenButtonText,
+            customButtonText: opts.customButtonText,
+            customButtonUrl: opts.customButtonUrl,
+            idleStateText: opts.idleStateText ?? '🌸',
+            idleLargeImageText: opts.idleLargeImageText ?? '🌺',
+        }
+    )
+    if (!activity) return
+    try {
+        rpcClient.setActivity(activity)
+    } catch {
+        rpcClient = undefined
+        rpcReady = false
+    }
 }
