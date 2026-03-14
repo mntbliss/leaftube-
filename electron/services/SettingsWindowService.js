@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { getTransparentFrameOptions, getWebPreferences } from './WindowOptionsHelper.js'
 
 export class SettingsWindowService {
     constructor({ app, BrowserWindow, rootDirPath, appSettings }) {
@@ -22,29 +23,23 @@ export class SettingsWindowService {
         const minWidth = Number(windowSettings.minWidth) || 420
         const minHeight = Number(windowSettings.minHeight) || 360
 
+        const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
+        const preloadPath = resolve(this.rootDirPath, 'electron', 'preload.cjs')
         this.settingsWindow = new this.BrowserWindow({
             width,
             height,
             minWidth,
             minHeight,
-            frame: false,
-            transparent: true,
             resizable: false,
-            roundedCorners: this.appSettings?.window?.useAcrylic ? false : true,
-            backgroundColor: '#00000000',
-            backgroundMaterial: this.appSettings?.window?.useAcrylic ? 'acrylic' : 'none',
-            webPreferences: {
-                preload: resolve(this.rootDirPath, 'electron', 'preload.cjs'),
-                contextIsolation: true,
-                nodeIntegration: false,
-            },
+            ...getTransparentFrameOptions(isAcrylic),
+            webPreferences: getWebPreferences({ preloadPath }),
         })
 
         this.settingsWindow.loadFile(resolve(this.rootDirPath, 'dist', 'index.html'), {
             search: '?view=settings',
         })
 
-        if (this.appSettings?.developer?.enableSettingsDeveloperConsole) {
+        if (this.appSettings?.developer?.isSettingsDeveloperConsoleEnabled) {
             this.settingsWindow.webContents.openDevTools({ mode: 'detach' })
         }
 

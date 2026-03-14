@@ -1,15 +1,15 @@
 {
   "developer": {
-    "enableDeveloperConsole": false,
-    "enableYoutubeDeveloperConsole": false,
-    "enableSettingsDeveloperConsole": true
+    "isDeveloperConsoleEnabled": false,
+    "isYoutubeDeveloperConsoleEnabled": false,
+    "isSettingsDeveloperConsoleEnabled": false
   },
   "window": {
     "width": 480,
     "height": 200,
     "minWidth": 480,
     "minHeight": 200,
-    "useAcrylic": false,
+    "isAcrylic": false,
     "electronPaddingForAnimation": 0
   },
   "settingsWindow": {
@@ -19,19 +19,23 @@
     "minHeight": 360
   },
   "discordRichPresence": {
-    "enabledByDefault": true,
+    "isEnabledByDefault": true,
     "applicationId": "your_app_id_from_dev_portal",
     "largeImageKeyListening": "leaf_listening",
     "presenceUpdateIntervalMs": 5000,
     "watchButtonText": "watch 🍃",
     "listenButtonText": "listen 🍃",
     "customButtonText": "leaftube 🌿 code",
-    "customButtonUrl": "https://github.com/mntbliss/leaftube-"
+    "customButtonUrl": "https://github.com/mntbliss/leaftube-",
+    "idleStateText": "🌸",
+    "idleLargeImageText": "🌺"
   },
   "youtubeMusic": {
     "url": "https://music.youtube.com",
-    "useVideosInsteadOfPicture": true,
+    "isVideosInsteadOfPicture": true,
     "pollIntervalMs": 400,
-    "maxSongTitleLength": 36
+    "maxSongTitleLength": 36,
+    "volumeLevel": 1,
+    "isMuted": false
   }
 }

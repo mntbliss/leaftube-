@@ -15,12 +15,16 @@
             originalSettings.value = JSON.parse(JSON.stringify(safeSettings))
         } catch (loadError) {
             LoggerService.errorDump('Failed to load settings', loadError)
-            errorText.value = 'failed to load settings'
+            setErrorFrom(loadError, 'failed to load settings')
         }
     }
 
     function closeWindow() {
         window.close()
+    }
+
+    function setErrorFrom(error, fallbackMessage) {
+        errorText.value = error?.message ? error.message : fallbackMessage
     }
 
     const hasChanges = computed(() => {
@@ -46,7 +50,7 @@
             }
         } catch (saveError) {
             LoggerService.errorDump('Failed to save settings', saveError)
-            errorText.value = saveError && saveError.message ? saveError.message : 'failed to save settings'
+            setErrorFrom(saveError, 'failed to save settings')
         } finally {
             isSaving.value = false
         }
@@ -67,7 +71,7 @@
             }
         } catch (resetError) {
             LoggerService.errorDump('Failed to reset settings', resetError)
-            errorText.value = resetError && resetError.message ? resetError.message : 'failed to reset settings'
+            setErrorFrom(resetError, 'failed to reset settings')
         } finally {
             isSaving.value = false
         }
@@ -89,15 +93,15 @@
                     <h3>₊˚✧ ◡◠ 🌺 Developer</h3>
                     <label class="settings-row">
                         <span>Enable developer console</span>
-                        <input v-model="settings.developer.enableDeveloperConsole" type="checkbox" />
+                        <input v-model="settings.developer.isDeveloperConsoleEnabled" type="checkbox" />
                     </label>
                     <label class="settings-row">
                         <span>Enable YouTube devtools</span>
-                        <input v-model="settings.developer.enableYoutubeDeveloperConsole" type="checkbox" />
+                        <input v-model="settings.developer.isYoutubeDeveloperConsoleEnabled" type="checkbox" />
                     </label>
                     <label class="settings-row">
                         <span>Enable settings devtools</span>
-                        <input v-model="settings.developer.enableSettingsDeveloperConsole" type="checkbox" />
+                        <input v-model="settings.developer.isSettingsDeveloperConsoleEnabled" type="checkbox" />
                     </label>
                 </section>
 
@@ -112,8 +116,8 @@
                         <input v-model.number="settings.window.height" type="number" />
                     </label>
                     <label class="settings-row">
-                        <span>Use acrylic</span>
-                        <input v-model="settings.window.useAcrylic" type="checkbox" />
+                        <span>Acrylic background</span>
+                        <input v-model="settings.window.isAcrylic" type="checkbox" />
                     </label>
                 </section>
 
@@ -121,7 +125,7 @@
                     <h3>₊˚✧ ◡◠ 🌺 Discord</h3>
                     <label class="settings-row">
                         <span>Enabled by default</span>
-                        <input v-model="settings.discordRichPresence.enabledByDefault" type="checkbox" />
+                        <input v-model="settings.discordRichPresence.isEnabledByDefault" type="checkbox" />
                     </label>
                     <label class="settings-row">
                         <span>Application ID</span>
@@ -142,6 +146,14 @@
                     <label class="settings-row">
                         <span>Custom button URL</span>
                         <input v-model="settings.discordRichPresence.customButtonUrl" type="text" />
+                    </label>
+                    <label class="settings-row">
+                        <span>Custom idle text</span>
+                        <input v-model="settings.discordRichPresence.idleStateText" type="text" />
+                    </label>
+                    <label class="settings-row">
+                        <span>Custom idle large image text</span>
+                        <input v-model="settings.discordRichPresence.idleLargeImageText" type="text" />
                     </label>
                 </section>
 
