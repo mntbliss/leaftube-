@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { getTransparentFrameOptions, getWebPreferences } from './WindowOptionsHelper.js'
+import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 
 export class SettingsWindowService {
     constructor({ app, BrowserWindow, rootDirPath, appSettings }) {
