@@ -18,4 +18,5 @@ export const IpcChannel = {
     PLAYER_SET_MUTED: 'player:set-muted',
     PLAYER_GET_VOLUME: 'player:get-volume',
     PLAYER_NOW_PLAYING: 'player:now-playing',
+    LOGS_SAVE: 'logs:save',
 }

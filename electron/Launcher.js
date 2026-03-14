@@ -28,7 +28,7 @@ export class Launcher {
         this.isAcrylic = Boolean(this.appSettings.window?.isAcrylic)
         this.isDeveloperConsoleEnabled = Boolean(this.appSettings.developer?.isDeveloperConsoleEnabled)
 
-        LoggerService.init(this.appSettings)
+        LoggerService.init(this.appSettings, this.app.isPackaged)
 
         this.youtubeDebloatCss = ''
 
@@ -70,9 +70,6 @@ export class Launcher {
             rootPath: this.rootDirPath,
         })
 
-        process.on('unhandledRejection', error => {
-            LoggerService.errorDump('Unhandled promise rejection', error)
-        })
     }
 
     async start() {

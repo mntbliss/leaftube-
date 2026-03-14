@@ -1,32 +1,30 @@
 import rpcLib from 'discord-rpc'
+import * as LoggerService from '../src/services/LoggerService.js'
+
+LoggerService.init()
 
 const clientId = process.env.DISCORD_CLIENT_ID ? String(process.env.DISCORD_CLIENT_ID) : ''
 const logName = '[discordRpcWorker]'
 
 if (!clientId) {
-    // eslint-disable-next-line no-console
-    console.error(`${logName} missing DISCORD_CLIENT_ID, exiting`)
+    LoggerService.error(`${logName} missing DISCORD_CLIENT_ID, exiting`)
     process.exit(0)
 }
 
-// eslint-disable-next-line no-console
-console.log(`${logName} starting, clientId: `, clientId)
+LoggerService.log(`${logName} starting, clientId: `, clientId)
 
 const rpc = new rpcLib.Client({ transport: 'ipc' })
 
 rpc.on('ready', () => {
-    // eslint-disable-next-line no-console
-    console.log(`${logName} rpc ready`)
+    LoggerService.log(`${logName} rpc ready`)
 })
 
 rpc.on('error', error => {
-    // eslint-disable-next-line no-console
-    console.error(`${logName} rpc error:\n`, error)
+    LoggerService.error(`${logName} rpc error:\n`, error)
 })
 
 rpc.login({ clientId }).catch(error => {
-    // eslint-disable-next-line no-console
-    console.error(`${logName} login failed:\n`, error)
+    LoggerService.error(`${logName} login failed:\n`, error)
 })
 
 function buildDiscordActivity(payload) {
@@ -81,7 +79,6 @@ process.on('message', message => {
     try {
         rpc.setActivity(activity)
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`${logName} setActivity failed:\n`, error)
+        LoggerService.error(`${logName} setActivity failed:\n`, error)
     }
 })

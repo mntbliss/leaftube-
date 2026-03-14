@@ -1,6 +1,9 @@
+import { dirname } from 'node:path'
 import { IpcChannel } from '../constants/ipc-channels.js'
 import { PlayerAction } from '../constants/player-actions.js'
 import * as DiscordService from './DiscordService.js'
+import * as LogBufferService from './LogBufferService.js'
+import { errorWithBuffer } from '../helpers/error-helper.js'
 import { ConfigService } from '../../src/services/ConfigService.js'
 
 function persistYoutubeVolumeState(youtubeWindowService) {
@@ -11,8 +14,7 @@ function persistYoutubeVolumeState(youtubeWindowService) {
         settings.youtubeMusic.isMuted = youtubeWindowService.wasLastMuted
         ConfigService.saveSettings(settings)
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('[IpcService] persist volume/muted failed', error)
+        errorWithBuffer('[IpcService] persist volume/muted failed', error)
     }
 }
 
@@ -27,9 +29,8 @@ function registerConfigHandlers(ipcMain, appSettings) {
             ConfigService.saveSettings(updatedSettings)
             return { ok: true }
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('[IpcService] config:set failed', error)
-            throw error
+            errorWithBuffer('[IpcService] config:set failed', error)
+            return { ok: false, error: error?.message ?? String(error) }
         }
     })
 
@@ -38,9 +39,8 @@ function registerConfigHandlers(ipcMain, appSettings) {
             const defaults = ConfigService.resetSettingsToDefaults()
             return { ok: true, settings: defaults }
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('[IpcService] config:reset failed', error)
-            throw error
+            errorWithBuffer('[IpcService] config:reset failed', error)
+            return { ok: false, error: error?.message ?? String(error), settings: null }
         }
     })
 }
@@ -85,9 +85,8 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
             }
             if (app && typeof app.quit === 'function') app.quit()
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('[IpcService] ui:restart-app failed', error)
-            throw error
+            errorWithBuffer('[IpcService] ui:restart-app failed', error)
+            return { ok: false, error: error?.message ?? String(error) }
         }
         return {}
     })
@@ -103,47 +102,72 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
         youtubeWindowService.ensureWindow(false)
     }
 
+    async function safePlayerInvoke(awaitedFunction) {
+        try {
+            await awaitedFunction()
+            return {}
+        } catch (error) {
+            errorWithBuffer('[IpcService] player action failed', error)
+            return {}
+        }
+    }
+
     ipcMain.handle('player:play-pause', async () => {
         ensureYoutubeReady()
-        await youtubeWindowService.clickPlayer(PlayerAction.PLAY_PAUSE)
-        return {}
+        return safePlayerInvoke(() => youtubeWindowService.clickPlayer(PlayerAction.PLAY_PAUSE))
     })
 
     ipcMain.handle('player:next', async () => {
         ensureYoutubeReady()
-        await youtubeWindowService.clickPlayer(PlayerAction.NEXT)
-        return {}
+        return safePlayerInvoke(() => youtubeWindowService.clickPlayer(PlayerAction.NEXT))
     })
 
     ipcMain.handle('player:previous', async () => {
         ensureYoutubeReady()
-        await youtubeWindowService.clickPlayer(PlayerAction.PREVIOUS)
-        return {}
+        return safePlayerInvoke(() => youtubeWindowService.clickPlayer(PlayerAction.PREVIOUS))
     })
 
     ipcMain.handle('player:seek', async (_event, fraction) => {
         ensureYoutubeReady()
-        await youtubeWindowService.seekToFraction(fraction)
-        return {}
+        return safePlayerInvoke(() => youtubeWindowService.seekToFraction(fraction))
     })
 
     ipcMain.handle(IpcChannel.PLAYER_SET_VOLUME, async (_event, fraction) => {
         ensureYoutubeReady()
-        await youtubeWindowService.setVolume(fraction)
-        persistYoutubeVolumeState(youtubeWindowService)
-        return {}
+        return safePlayerInvoke(async () => {
+            await youtubeWindowService.setVolume(fraction)
+            persistYoutubeVolumeState(youtubeWindowService)
+        })
     })
 
     ipcMain.handle(IpcChannel.PLAYER_SET_MUTED, async (_event, isMuted) => {
         ensureYoutubeReady()
-        await youtubeWindowService.setMuted(isMuted)
-        persistYoutubeVolumeState(youtubeWindowService)
-        return {}
+        return safePlayerInvoke(async () => {
+            await youtubeWindowService.setMuted(isMuted)
+            persistYoutubeVolumeState(youtubeWindowService)
+        })
     })
 
     ipcMain.handle(IpcChannel.PLAYER_GET_VOLUME, async () => {
-        ensureYoutubeReady()
-        return youtubeWindowService.getVolume()
+        try {
+            ensureYoutubeReady()
+            return await youtubeWindowService.getVolume()
+        } catch (error) {
+            errorWithBuffer('[IpcService] player getVolume failed', error)
+            return 0
+        }
+    })
+}
+
+function registerLogsHandlers(ipcMain, app) {
+    ipcMain.handle(IpcChannel.LOGS_SAVE, async () => {
+        try {
+            const appDir = app.isPackaged ? dirname(app.getPath('exe')) : app.getAppPath()
+            return LogBufferService.saveToFile(appDir)
+        } catch (error) {
+            errorWithBuffer('[IpcService] logs:save failed', error)
+            return { ok: false, error: error?.message ?? String(error), path: null }
+        }
     })
 }
 
@@ -152,4 +176,5 @@ export function registerIpc({ ipcMain, app, appSettings, mainWindowService, yout
     registerConfigHandlers(ipcMain, appSettings)
     registerUiHandlers(ipcMain, expandedState, app, mainWindowService, youtubeWindowService, settingsWindowService)
     registerPlayerHandlers(ipcMain, youtubeWindowService)
+    registerLogsHandlers(ipcMain, app)
 }

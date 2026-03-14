@@ -21,6 +21,7 @@ const IpcChannel = {
     PLAYER_SET_MUTED: 'player:set-muted',
     PLAYER_GET_VOLUME: 'player:get-volume',
     PLAYER_NOW_PLAYING: 'player:now-playing',
+    LOGS_SAVE: 'logs:save',
 }
 
 contextBridge.exposeInMainWorld('desktopBridge', {
@@ -65,6 +66,11 @@ contextBridge.exposeInMainWorld('desktopBridge', {
             ipcRenderer.on(IpcChannel.UI_MINI_POP, () => {
                 if (typeof callback === 'function') callback()
             })
+        },
+    },
+    logs: {
+        save() {
+            return ipcRenderer.invoke(IpcChannel.LOGS_SAVE)
         },
     },
     player: {
