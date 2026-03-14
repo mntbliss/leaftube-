@@ -25,4 +25,3 @@ export function getWebPreferences(options = {}) {
     if (partition) prefs.partition = partition
     return prefs
 }
-
