@@ -1,4 +1,5 @@
 import { dirname } from 'node:path'
+import { clipboard } from 'electron'
 import { IpcChannel } from '../constants/ipc-channels.js'
 import { PlayerAction } from '../constants/player-actions.js'
 import * as DiscordService from './DiscordService.js'
@@ -73,6 +74,14 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         if (mainWindowService) mainWindowService.hideWindow()
         if (!app || typeof app.quit !== 'function') return {}
         app.quit()
+        return {}
+    })
+
+    ipcMain.handle(IpcChannel.UI_FORCE_QUIT, async () => {
+        errorWithBuffer('[User] force quit 🍂')
+        if (app) app.leafQuitting = true
+        if (app && typeof app.quit === 'function') app.quit()
+        process.exit(0)
         return {}
     })
 
@@ -171,6 +180,17 @@ function registerLogsHandlers(ipcMain, app) {
         } catch (error) {
             errorWithBuffer('[IpcService] logs:save failed', error)
             return { ok: false, error: error?.message ?? String(error), path: null }
+        }
+    })
+
+    ipcMain.handle(IpcChannel.LOGS_COPY, async () => {
+        try {
+            const text = LogBufferService.getContentAsText()
+            clipboard.writeText(text || '(no logs yet)')
+            return { ok: true }
+        } catch (error) {
+            errorWithBuffer('[IpcService] logs:copy failed', error)
+            return { ok: false, error: error?.message ?? String(error) }
         }
     })
 }

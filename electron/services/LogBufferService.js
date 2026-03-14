@@ -48,6 +48,14 @@ export function formatEntriesForFile(entries) {
 }
 
 /**
+ * @returns {string} formatted log buffer content (same format as saved file)
+ */
+export function getContentAsText() {
+    const entries = getLastForSave()
+    return formatEntriesForFile(entries).join('\n')
+}
+
+/**
  * save latest errors to a .log file in the given app directory (e.g. folder containing the exe).
  * @param {string} appDirectory - Directory to write the log file into
  * @returns {{ ok: true, path: string } | { ok: false, error: string, path: null }}

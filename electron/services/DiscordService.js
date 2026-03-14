@@ -50,9 +50,22 @@ function startRpcClient() {
     })
 }
 
+function clearPresence() {
+    if (!rpcClient) return
+    const client = rpcClient
+    const wasReady = rpcReady
+    rpcClient = undefined
+    rpcReady = false
+    Promise.resolve()
+        .then(() => (wasReady ? client.clearActivity() : undefined))
+        .then(() => client.destroy())
+        .catch(() => {})
+}
+
 export function updateDiscordEnabled(requestedEnabled) {
     isEnabled = Boolean(requestedEnabled)
     LoggerService.log('[DiscordService] updateDiscordEnabled', isEnabled, 'appId:', appSettings?.discordRichPresence?.applicationId || '(empty)')
+    if (!isEnabled) clearPresence()
     scheduleDiscordConnect()
     const result = { discordEnabled: isEnabled }
     LoggerService.log('[DiscordService] updateDiscordEnabled result', result)
