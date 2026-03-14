@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
+import { Path } from '../constants/path.js'
 import * as LoggerService from '../../src/services/LoggerService.js'
 
 export let isEnabled = false
@@ -28,7 +29,7 @@ function startRpcProcess() {
     if (rpcProcess) return
     if (!isEnabled || !appSettings.discordRichPresence.applicationId) return
 
-    const rpcPath = resolve(rootDirPath, 'electron', 'rpcWorker.js')
+    const rpcPath = resolve(rootDirPath, Path.ELECTRON_DIR, Path.RPC_WORKER_FILENAME)
     rpcProcess = spawn(electronApp.getPath('exe'), [rpcPath], {
         cwd: rootDirPath,
         env: {

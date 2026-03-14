@@ -9,6 +9,7 @@ import { MainWindowService } from './services/MainWindowService.js'
 import { YoutubeWindowService } from './services/YoutubeWindowService.js'
 import { SettingsWindowService } from './services/SettingsWindowService.js'
 import * as DiscordService from './services/DiscordService.js'
+import { Path } from './constants/path.js'
 import { registerIpc } from './services/IpcService.js'
 
 export class Launcher {
@@ -78,7 +79,7 @@ export class Launcher {
         // Ads + tracking (fromPrebuiltAdsOnly = ads only)
         const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
         // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
-        blocker.enableBlockingInSession(this.session.fromPartition('persist:youtube'))
+        blocker.enableBlockingInSession(this.session.fromPartition(Path.YOUTUBE_PARTITION))
 
         this.youtubeWindowService.ensureWindow(false)
 

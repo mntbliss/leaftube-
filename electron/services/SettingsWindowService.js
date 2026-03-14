@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { Path } from '../constants/path.js'
 import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 
 export class SettingsWindowService {
@@ -24,7 +25,7 @@ export class SettingsWindowService {
         const minHeight = Number(windowSettings.minHeight) || 360
 
         const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
-        const preloadPath = resolve(this.rootDirPath, 'electron', 'preload.cjs')
+        const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
         this.settingsWindow = new this.BrowserWindow({
             width,
             height,
@@ -35,7 +36,7 @@ export class SettingsWindowService {
             webPreferences: getWebPreferences({ preloadPath }),
         })
 
-        this.settingsWindow.loadFile(resolve(this.rootDirPath, 'dist', 'index.html'), {
+        this.settingsWindow.loadFile(resolve(this.rootDirPath, Path.DIST_DIR, Path.INDEX_HTML_FILENAME), {
             search: '?view=settings',
         })
 

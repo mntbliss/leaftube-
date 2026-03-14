@@ -37,8 +37,8 @@
             discordEnabled.value = loaded.discordEnabled
             LoggerService.init(loaded.settings)
             isLoadingConfig.value = false
-        } catch (err) {
-            LoggerService.errorDump('Failed to load config', err)
+        } catch (error) {
+            LoggerService.errorDump('Failed to load config', error)
             isLoadingConfig.value = false
         }
     }
@@ -55,8 +55,8 @@
             const result = await window.desktopBridge.discord.setEnabled(next)
             discordEnabled.value = result.discordEnabled
             LoggerService.log('[Discord] result:', result)
-        } catch (err) {
-            LoggerService.errorDump('Failed to toggle Discord Rich Presence', err)
+        } catch (error) {
+            LoggerService.errorDump('Failed to toggle Discord Rich Presence', error)
         }
     }
 

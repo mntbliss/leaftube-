@@ -1,0 +1,21 @@
+/** IPC channel names (used for stuff like preload) */
+export const IpcChannel = {
+    CONFIG_GET: 'config:get',
+    CONFIG_SET: 'config:set',
+    CONFIG_RESET: 'config:reset',
+    DISCORD_SET_ENABLED: 'discord:set-enabled',
+    UI_SET_EXPANDED: 'ui:set-expanded',
+    UI_RESIZE_YOUTUBE_VIEW: 'ui:resize-youtube-view',
+    UI_CLOSE_APP: 'ui:close-app',
+    UI_RESTART_APP: 'ui:restart-app',
+    UI_OPEN_SETTINGS: 'ui:open-settings',
+    UI_MINI_POP: 'ui:mini-pop',
+    PLAYER_PLAY_PAUSE: 'player:play-pause',
+    PLAYER_NEXT: 'player:next',
+    PLAYER_PREVIOUS: 'player:previous',
+    PLAYER_SEEK: 'player:seek',
+    PLAYER_SET_VOLUME: 'player:set-volume',
+    PLAYER_SET_MUTED: 'player:set-muted',
+    PLAYER_GET_VOLUME: 'player:get-volume',
+    PLAYER_NOW_PLAYING: 'player:now-playing',
+}

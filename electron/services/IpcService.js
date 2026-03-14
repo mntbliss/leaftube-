@@ -1,3 +1,5 @@
+import { IpcChannel } from '../constants/ipc-channels.js'
+import { PlayerAction } from '../constants/player-actions.js'
 import * as DiscordService from './DiscordService.js'
 import { ConfigService } from '../../src/services/ConfigService.js'
 
@@ -15,12 +17,12 @@ function persistYoutubeVolumeState(youtubeWindowService) {
 }
 
 function registerConfigHandlers(ipcMain, appSettings) {
-    ipcMain.handle('config:get', async () => ({
+    ipcMain.handle(IpcChannel.CONFIG_GET, async () => ({
         settings: appSettings,
         discordEnabled: DiscordService.isEnabled,
     }))
 
-    ipcMain.handle('config:set', async (_event, updatedSettings) => {
+    ipcMain.handle(IpcChannel.CONFIG_SET, async (_event, updatedSettings) => {
         try {
             ConfigService.saveSettings(updatedSettings)
             return { ok: true }
@@ -31,7 +33,7 @@ function registerConfigHandlers(ipcMain, appSettings) {
         }
     })
 
-    ipcMain.handle('config:reset', async () => {
+    ipcMain.handle(IpcChannel.CONFIG_RESET, async () => {
         try {
             const defaults = ConfigService.resetSettingsToDefaults()
             return { ok: true, settings: defaults }
@@ -44,11 +46,11 @@ function registerConfigHandlers(ipcMain, appSettings) {
 }
 
 function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, youtubeWindowService, settingsWindowService) {
-    ipcMain.handle('discord:set-enabled', async (_event, requestedEnabled) => {
+    ipcMain.handle(IpcChannel.DISCORD_SET_ENABLED, async (_event, requestedEnabled) => {
         return DiscordService.updateDiscordEnabled(requestedEnabled)
     })
 
-    ipcMain.handle('ui:set-expanded', async (_event, expanded) => {
+    ipcMain.handle(IpcChannel.UI_SET_EXPANDED, async (_event, expanded) => {
         expandedState.isExpanded = Boolean(expanded)
         if (!expandedState.isExpanded) {
             youtubeWindowService.hideWindow()
@@ -60,12 +62,12 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return { isExpanded: expandedState.isExpanded }
     })
 
-    ipcMain.handle('ui:resize-youtube-view', async () => {
+    ipcMain.handle(IpcChannel.UI_RESIZE_YOUTUBE_VIEW, async () => {
         youtubeWindowService.resizeView()
         return {}
     })
 
-    ipcMain.handle('ui:close-app', async () => {
+    ipcMain.handle(IpcChannel.UI_CLOSE_APP, async () => {
         if (settingsWindowService) settingsWindowService.hideWindow()
         if (youtubeWindowService) youtubeWindowService.hideWindow()
         if (mainWindowService) mainWindowService.hideWindow()
@@ -74,7 +76,7 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return {}
     })
 
-    ipcMain.handle('ui:restart-app', async () => {
+    ipcMain.handle(IpcChannel.UI_RESTART_APP, async () => {
         try {
             if (app && typeof app.relaunch === 'function') {
                 app.relaunch()
@@ -90,46 +92,57 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return {}
     })
 
-    ipcMain.handle('ui:open-settings', async () => {
+    ipcMain.handle(IpcChannel.UI_OPEN_SETTINGS, async () => {
         if (settingsWindowService) settingsWindowService.ensureWindow()
         return {}
     })
 }
 
 function registerPlayerHandlers(ipcMain, youtubeWindowService) {
+    function ensureYoutubeReady() {
+        youtubeWindowService.ensureWindow(false)
+    }
+
     ipcMain.handle('player:play-pause', async () => {
-        await youtubeWindowService.clickPlayer('playPause')
+        ensureYoutubeReady()
+        await youtubeWindowService.clickPlayer(PlayerAction.PLAY_PAUSE)
         return {}
     })
 
     ipcMain.handle('player:next', async () => {
-        await youtubeWindowService.clickPlayer('next')
+        ensureYoutubeReady()
+        await youtubeWindowService.clickPlayer(PlayerAction.NEXT)
         return {}
     })
 
     ipcMain.handle('player:previous', async () => {
-        await youtubeWindowService.clickPlayer('previous')
+        ensureYoutubeReady()
+        await youtubeWindowService.clickPlayer(PlayerAction.PREVIOUS)
         return {}
     })
 
     ipcMain.handle('player:seek', async (_event, fraction) => {
+        ensureYoutubeReady()
         await youtubeWindowService.seekToFraction(fraction)
         return {}
     })
 
-    ipcMain.handle('player:set-volume', async (_event, fraction) => {
+    ipcMain.handle(IpcChannel.PLAYER_SET_VOLUME, async (_event, fraction) => {
+        ensureYoutubeReady()
         await youtubeWindowService.setVolume(fraction)
         persistYoutubeVolumeState(youtubeWindowService)
         return {}
     })
 
-    ipcMain.handle('player:set-muted', async (_event, isMuted) => {
+    ipcMain.handle(IpcChannel.PLAYER_SET_MUTED, async (_event, isMuted) => {
+        ensureYoutubeReady()
         await youtubeWindowService.setMuted(isMuted)
         persistYoutubeVolumeState(youtubeWindowService)
         return {}
     })
 
-    ipcMain.handle('player:get-volume', async () => {
+    ipcMain.handle(IpcChannel.PLAYER_GET_VOLUME, async () => {
+        ensureYoutubeReady()
         return youtubeWindowService.getVolume()
     })
 }
