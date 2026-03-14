@@ -6,6 +6,15 @@ export function useVolumeControls(volumeTrackRef) {
     const volumePercent = ref(100)
     const isMuted = ref(false)
 
+    function setFromPayload(volumeLevel, muted) {
+        if (typeof volumeLevel === 'number') {
+            volumePercent.value = Math.round(Math.max(0, Math.min(100, volumeLevel * 100)))
+        }
+        if (typeof muted === 'boolean') {
+            isMuted.value = muted
+        }
+    }
+
     onMounted(async () => {
         try {
             const state = await getVolume()
@@ -40,6 +49,7 @@ export function useVolumeControls(volumeTrackRef) {
     return {
         volumePercent,
         isMuted,
+        setFromPayload,
         handleMuteClick,
         handleVolumeClick,
         handleVolumeDown,

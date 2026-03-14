@@ -1,4 +1,6 @@
 import { resolve } from 'node:path'
+import { Path } from '../constants/path.js'
+import { PlayerAction } from '../constants/player-actions.js'
 import { runScriptInView } from '../helpers/view-helpers.js'
 import { getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 import { readNowPlaying, clickPlayerButton, clickPreviousSmart, seekPlayerToFraction, setMediaVolume, setMediaMuted, getMediaVolume } from './YoutubeHandler.js'
@@ -22,7 +24,7 @@ export class YoutubeWindowService {
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
-        this.lastVolume = Number.isFinite(volumeLevel) ? Math.max(0, Math.min(1, volumeLevel)) : 1
+        this.lastVolume = Number.isFinite(volumeLevel) ? Math.max(0, Math.min(1, volumeLevel)) : 0
         this.wasLastMuted = Boolean(isMuted)
     }
 
@@ -58,24 +60,25 @@ export class YoutubeWindowService {
             this.youtubeWindow.show()
         }
 
-        const barPreloadPath = resolve(this.rootDirPath, 'electron', 'youtubeBarPreload.cjs')
+        const barPreloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.YOUTUBE_BAR_PRELOAD_FILENAME)
         this.barView = new this.BrowserView({
             webPreferences: getWebPreferences({ preloadPath: barPreloadPath }),
         })
+        this.barView.webContents.setMaxListeners(50)
 
         this.youtubeView = new this.BrowserView({
-            webPreferences: getWebPreferences({ partition: 'persist:youtube' }),
+            webPreferences: getWebPreferences({ partition: Path.YOUTUBE_PARTITION }),
         })
 
         // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
         // memory leak bad uh-uh
-        this.youtubeView.webContents.setMaxListeners(20)
+        this.youtubeView.webContents.setMaxListeners(50)
 
         this.youtubeWindow.setBrowserView(this.barView)
         this.youtubeWindow.addBrowserView(this.youtubeView)
         this.resizeView()
 
-        this.barView.webContents.loadFile(resolve(this.rootDirPath, 'electron', 'youtubeBar.html'))
+        this.barView.webContents.loadFile(resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.YOUTUBE_BAR_HTML_FILENAME))
         this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url)
 
         if (isPreloading && restoredBounds) {
@@ -159,13 +162,17 @@ export class YoutubeWindowService {
         if (!this.youtubeView) return
         const guideScript = `(function() {
           document.body.classList.add('leaf-guide-hidden')
-          function toggleGuide() { document.body.classList.toggle('leaf-guide-hidden') }
-          function bindMenu() {
-            var btn = document.querySelector('ytmusic-nav-bar [aria-label="Guide"], ytmusic-nav-bar button[aria-label*="enu"], ytmusic-nav-bar .left-content button, tp-yt-paper-icon-button.ytmusic-nav-bar')
-            if (btn && !btn._leafBound) { btn._leafBound = true; btn.addEventListener('click', function() { setTimeout(toggleGuide, 50) }) }
+          function toggleGuideVisibility() { document.body.classList.toggle('leaf-guide-hidden') }
+          function bindGuideMenuButton() {
+            var guideMenuButton = document.querySelector('ytmusic-nav-bar .left-content button, ytmusic-nav-bar tp-yt-paper-icon-button')
+            if (guideMenuButton && !guideMenuButton._leafBound) {
+              guideMenuButton._leafBound = true
+              guideMenuButton.addEventListener('click', function() { setTimeout(toggleGuideVisibility, 50) })
+            }
           }
-          bindMenu(); setTimeout(bindMenu, 800)
-          new MutationObserver(bindMenu).observe(document.body, { childList: true, subtree: true })
+          bindGuideMenuButton()
+          setTimeout(bindGuideMenuButton, 800)
+          new MutationObserver(bindGuideMenuButton).observe(document.body, { childList: true, subtree: true })
         })()`
         runScriptInView(this.youtubeView, guideScript).catch(() => {})
 
@@ -175,15 +182,19 @@ export class YoutubeWindowService {
 
         if (!this.isVideosInsteadOfPicture) return
         const videoModeScript = `(function() {
-          function preferVideoMode() {
+          function switchToVideoTabIfNotActive() {
             if (document.body.classList.contains('video-mode')) return
-            var selectors = ['ytmusic-player-page [role="tab"][aria-label*="Video"]','ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]','ytmusic-player-page button[aria-label*="Video"]']
-            for (var i = 0; i < selectors.length; i++) {
-              var el = document.querySelector(selectors[i])
-              if (el) { el.click(); break }
+            var videoTabSelectors = ['ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]', 'ytmusic-player-page [role="tab"][tab-id="VIDEO"]']
+            for (var selectorIndex = 0; selectorIndex < videoTabSelectors.length; selectorIndex++) {
+              var videoTabElement = document.querySelector(videoTabSelectors[selectorIndex])
+              if (videoTabElement) {
+                videoTabElement.click()
+                break
+              }
             }
           }
-          preferVideoMode(); setInterval(preferVideoMode, 3000)
+          switchToVideoTabIfNotActive()
+          setInterval(switchToVideoTabIfNotActive, 3000)
         })()`
         runScriptInView(this.youtubeView, videoModeScript).catch(() => {})
     }
@@ -212,6 +223,14 @@ export class YoutubeWindowService {
             const videoId = videoIdMatch ? videoIdMatch[1] : null
             if (videoId) nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
 
+            try {
+                const volumeState = await getMediaVolume(this.youtubeView)
+                nowPlaying.volumeLevel = volumeState.volumeLevel
+                nowPlaying.isMuted = volumeState.isMuted
+                this.lastVolume = typeof volumeState.volumeLevel === 'number' ? volumeState.volumeLevel : this.lastVolume
+                this.wasLastMuted = typeof volumeState.isMuted === 'boolean' ? volumeState.isMuted : this.wasLastMuted
+            } catch {}
+
             if (typeof onPresence === 'function') {
                 const now = Date.now()
                 const isTrackValid = nowPlaying && nowPlaying.title
@@ -228,8 +247,10 @@ export class YoutubeWindowService {
 
     async clickPlayer(action) {
         if (!this.youtubeView) return
-        if (action === 'previous') await clickPreviousSmart(this.youtubeView)
+        const isNextOrPrev = action === PlayerAction.NEXT || action === PlayerAction.PREVIOUS
+        if (action === PlayerAction.PREVIOUS) await clickPreviousSmart(this.youtubeView)
         else await clickPlayerButton(this.youtubeView, action)
+        if (isNextOrPrev) this.applyStoredVolume()
     }
 
     async seekToFraction(fraction) {

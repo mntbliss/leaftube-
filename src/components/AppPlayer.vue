@@ -1,5 +1,5 @@
 <script setup>
-    import { computed, ref } from 'vue'
+    import { computed, ref, watch } from 'vue'
     import { playPause, next, previous } from '../services/YoutubeService.js'
     import { useVolumeControls } from '../composables/useVolumeControls.js'
     import { useProgressTrack } from '../composables/useProgressTrack.js'
@@ -13,7 +13,14 @@
     const progressTrackRef = ref(null)
     const volumeTrackRef = ref(null)
 
-    const { volumePercent, isMuted, handleMuteClick, handleVolumeClick, handleVolumeDown } = useVolumeControls(volumeTrackRef)
+    const { volumePercent, isMuted, setFromPayload, handleMuteClick, handleVolumeClick, handleVolumeDown } = useVolumeControls(volumeTrackRef)
+
+    watch(
+        () => [props.nowPlaying?.volumeLevel, props.nowPlaying?.isMuted],
+        ([level, muted]) => {
+            if (level != null || muted != null) setFromPayload(level, muted)
+        }
+    )
     const { handleProgressTrackClick, handleProgressTrackDown } = useProgressTrack(progressTrackRef, () => props.nowPlaying)
 
     const coverStyle = computed(() => {

@@ -3,28 +3,42 @@ import { isValidView, runScriptInView, runScriptInViewReturn } from '../helpers/
 export async function clickPlayerButton(youtubeView, action) {
     const script = `
     (() => {
-      const bar = document.querySelector('ytmusic-player-bar')
-      if (!bar) return
-
-      const selectors = {
-        playPause: '[title="Pause"], [title="Play"]',
-        next: '[title="Next song"], [title="Next"], [aria-label*="Next"]',
-        previous: '[title="Previous song"], [title="Previous"], [aria-label*="Previous"]'
-      }
-
-      const clickButton = (selector) => {
-        const button = bar.querySelector(selector)
-        if (button) button.click()
-      }
-
       const action = '${action}'
-
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      if (!playerBar) return
+      const selectors = {
+        playPause: '#play-pause-button, .play-pause-button',
+        next: '.next-button',
+        previous: '.previous-button'
+      }
+      const clickControlButton = (selector) => {
+        const buttonElement = playerBar.querySelector(selector)
+        if (buttonElement) buttonElement.click()
+      }
       if (action === 'playPause') {
-        clickButton(selectors.playPause)
+        const mediaElement = document.querySelector('video') || document.querySelector('audio')
+        const titleElement = playerBar.querySelector('.title')
+        const hasTrack = mediaElement && typeof mediaElement.duration === 'number' && mediaElement.duration > 0
+        const hasTitle = titleElement && titleElement.textContent && titleElement.textContent.trim().length > 0
+        const isNothingLoaded = !hasTrack && !hasTitle
+        if (isNothingLoaded) {
+          const mainContent = document.querySelector('#content') || document.querySelector('ytmusic-browse-response') || document.body
+          if (!mainContent) return
+          const firstCarouselShelf = mainContent.querySelector('ytmusic-carousel-shelf-renderer')
+          const playAllButton = firstCarouselShelf ? firstCarouselShelf.querySelector('#more-content-button button') : null
+          if (playAllButton && !playAllButton.closest('ytmusic-player-bar')) {
+            playAllButton.click()
+          } else {
+            const firstItemLink = mainContent.querySelector('ytmusic-two-row-item-renderer a.yt-simple-endpoint.image-wrapper[href*="watch?v="]')
+            if (firstItemLink && !firstItemLink.closest('ytmusic-player-bar')) firstItemLink.click()
+          }
+        } else {
+          clickControlButton(selectors.playPause)
+        }
       } else if (action === 'next') {
-        clickButton(selectors.next)
+        clickControlButton(selectors.next)
       } else if (action === 'previous') {
-        clickButton(selectors.previous)
+        clickControlButton(selectors.previous)
       }
     })()
   `
@@ -37,13 +51,13 @@ export async function seekPlayerToFraction(youtubeView, fraction) {
 
     const script = `
     (() => {
-      const media = document.querySelector('video') || document.querySelector('audio')
-      if (!media || typeof media.duration !== 'number' || media.duration <= 0) return
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
+      if (!mediaElement || typeof mediaElement.duration !== 'number' || mediaElement.duration <= 0) return
 
       const fraction = ${safeFraction}
-      const nextTime = Math.max(0, Math.min(1, fraction)) * media.duration
+      const nextTime = Math.max(0, Math.min(1, fraction)) * mediaElement.duration
       if (Number.isFinite(nextTime)) {
-        media.currentTime = nextTime
+        mediaElement.currentTime = nextTime
       }
     })()
   `
@@ -53,26 +67,20 @@ export async function seekPlayerToFraction(youtubeView, fraction) {
 export async function clickPreviousSmart(youtubeView) {
     const script = `
     (() => {
-      const bar = document.querySelector('ytmusic-player-bar')
-      const media = document.querySelector('video') || document.querySelector('audio')
-      if (!bar || !media) return
-
-      const current = typeof media.currentTime === 'number' ? media.currentTime : 0
-      if (current > 3) {
-        media.currentTime = 0
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
+      if (!playerBar || !mediaElement) return
+      const currentTimeSeconds = typeof mediaElement.currentTime === 'number' ? mediaElement.currentTime : 0
+      if (currentTimeSeconds > 3) {
+        mediaElement.currentTime = 0
         return
       }
-
-      const selectors = [
-        '[title="Previous song"]',
-        '[title="Previous"]',
-        '[aria-label*="Previous"]'
-      ]
-
-      for (const selector of selectors) {
-        const button = bar.querySelector(selector)
-        if (button) {
-          button.click()
+      const previousButtonSelectors = ['.previous-button']
+      for (const selector of previousButtonSelectors) {
+        let previousButtonElement = playerBar.querySelector(selector)
+        if (!previousButtonElement && playerBar.shadowRoot) previousButtonElement = playerBar.shadowRoot.querySelector(selector)
+        if (previousButtonElement) {
+          previousButtonElement.click()
           break
         }
       }
@@ -100,19 +108,19 @@ export async function readNowPlaying(youtubeView) {
       }
       const isVideo = document.body.classList.contains('video-mode')
 
-      const media = document.querySelector('video') || document.querySelector('audio')
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
       let positionSeconds = 0
       let durationSeconds = 0
       let progressPercent = 0
       let isPaused = true
 
-      if (media && typeof media.currentTime === 'number' && typeof media.duration === 'number') {
-        positionSeconds = media.currentTime || 0
-        durationSeconds = media.duration || 0
+      if (mediaElement && typeof mediaElement.currentTime === 'number' && typeof mediaElement.duration === 'number') {
+        positionSeconds = mediaElement.currentTime || 0
+        durationSeconds = mediaElement.duration || 0
         if (durationSeconds > 0) {
           progressPercent = Math.max(0, Math.min(100, (positionSeconds / durationSeconds) * 100))
         }
-        isPaused = Boolean(media.paused)
+        isPaused = Boolean(mediaElement.paused)
       }
 
       return {
@@ -134,15 +142,28 @@ export async function readNowPlaying(youtubeView) {
 export async function setMediaVolume(youtubeView, fraction) {
     if (!isValidView(youtubeView)) return
     const safeFraction = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 1
+    const volumePercent = Math.round(safeFraction * 100)
     const script = `
     (() => {
-      const media = document.querySelector('video') || document.querySelector('audio')
-      if (media && typeof media.volume !== 'undefined') {
-        media.volume = ${safeFraction}
+      const fraction = ${safeFraction}
+      const volumePercent = ${volumePercent}
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
+      if (mediaElement && typeof mediaElement.volume !== 'undefined') mediaElement.volume = fraction
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      if (playerBar && playerBar.playerApi_ && typeof playerBar.playerApi_.setVolume === 'function') {
+        playerBar.playerApi_.setVolume(volumePercent)
       }
-      const bar = document.querySelector('ytmusic-player-bar')
-      if (bar && bar.playerApi_ && typeof bar.playerApi_.setVolume === 'function') {
-        bar.playerApi_.setVolume(Math.round(${safeFraction} * 100))
+      if (playerBar && playerBar.shadowRoot) {
+        function setVolumeSlider(slider) {
+          if (!slider) return
+          slider.value = volumePercent
+          slider.setAttribute('value', volumePercent)
+          slider.setAttribute('aria-valuenow', volumePercent)
+          slider.dispatchEvent(new Event('input', { bubbles: true }))
+          slider.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+        setVolumeSlider(playerBar.shadowRoot.querySelector('#volume-slider'))
+        setVolumeSlider(playerBar.shadowRoot.querySelector('#expand-volume-slider'))
       }
     })()
   `
@@ -154,13 +175,13 @@ export async function setMediaMuted(youtubeView, isMuted) {
     const muted = Boolean(isMuted)
     const script = `
     (() => {
-      const media = document.querySelector('video') || document.querySelector('audio')
-      if (media && typeof media.muted !== 'undefined') {
-        media.muted = ${muted}
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
+      if (mediaElement && typeof mediaElement.muted !== 'undefined') {
+        mediaElement.muted = ${muted}
       }
-      const bar = document.querySelector('ytmusic-player-bar')
-      if (bar && bar.playerApi_ && typeof bar.playerApi_.setMuted === 'function') {
-        bar.playerApi_.setMuted(${muted})
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      if (playerBar && playerBar.playerApi_ && typeof playerBar.playerApi_.setMuted === 'function') {
+        playerBar.playerApi_.setMuted(${muted})
       }
     })()
   `
@@ -168,17 +189,22 @@ export async function setMediaMuted(youtubeView, isMuted) {
 }
 
 export async function getMediaVolume(youtubeView) {
-    if (!isValidView(youtubeView)) return { volumeLevel: 1, isMuted: false }
+    if (!isValidView(youtubeView)) return { volumeLevel: 0, isMuted: false }
     const script = `
     (() => {
-      const media = document.querySelector('video') || document.querySelector('audio')
-      if (!media) return { volumeLevel: 1, isMuted: false }
-      return {
-        volumeLevel: typeof media.volume === 'number' ? Math.max(0, Math.min(1, media.volume)) : 1,
-        isMuted: Boolean(media.muted)
+      const mediaElement = document.querySelector('video') || document.querySelector('audio')
+      if (mediaElement && typeof mediaElement.volume === 'number') {
+        return {
+          volumeLevel: Math.max(0, Math.min(1, mediaElement.volume)),
+          isMuted: Boolean(mediaElement.muted)
+        }
       }
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      const slider = playerBar && playerBar.shadowRoot ? playerBar.shadowRoot.querySelector('#volume-slider') : null
+      const volumePercent = slider && typeof slider.value === 'number' ? slider.value : (slider ? parseInt(slider.getAttribute('value'), 10) : NaN)
+      const volumeLevel = Number.isFinite(volumePercent) ? Math.max(0, Math.min(1, volumePercent / 100)) : 0
+      return { volumeLevel, isMuted: mediaElement ? Boolean(mediaElement.muted) : false }
     })()
   `
-
-    return runScriptInViewReturn(youtubeView, script, { volumeLevel: 1, isMuted: false })
+    return runScriptInViewReturn(youtubeView, script, { volumeLevel: 0, isMuted: false })
 }
