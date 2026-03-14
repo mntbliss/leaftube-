@@ -1,6 +1,6 @@
 {
   "name": "leaftube",
-  "version": "1.0.3",
+  "version": "1.0.9",
   "description": "small youtube music desktop wrapper without distractions and ads",
   "author": "mntbliss",
   "main": "electron/main.js",
@@ -23,17 +23,24 @@
       "dist",
       "electron",
       "public",
+      "build",
       "src",
       "configs",
       "package.json",
       "node_modules"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "build/icon.ico"
+      }
     ],
     "win": {
       "target": [
         "nsis",
         "portable"
       ],
-      "signAndEditExecutable": false
+      "icon": "build/icon.ico"
     }
   },
   "dependencies": {
