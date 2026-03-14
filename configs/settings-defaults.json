@@ -35,7 +35,7 @@
     "isVideosInsteadOfPicture": true,
     "pollIntervalMs": 400,
     "maxSongTitleLength": 36,
-    "volumeLevel": 1,
+    "volumeLevel": 0.5,
     "isMuted": false
   }
 }
