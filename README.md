@@ -7,7 +7,7 @@
 </p> -->
 
 <p align="center">
-  <sub>⋆ <a href="docs/install.md">clone & install</a> ✿ <a href="docs/qna.md">troubleshooting</a> ✿ <a href="docs/credits">credits & deps</a> ⋆</sub>
+  <sub>⋆ <a href="docs/install.md">clone & install</a> ✿ <a href="docs/qna.md">troubleshooting</a> ✿ <a href="docs/credits.md">credits & deps</a> ⋆</sub>
 </p>
 
 <p align="center">
