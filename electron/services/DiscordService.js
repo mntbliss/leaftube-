@@ -5,18 +5,16 @@ import * as LoggerService from '../../src/services/LoggerService.js'
 export let isEnabled = false
 
 let appSettings
-let appProfile
 let rootDirPath
 let electronApp
 let rpcProcess
 
-export function initDiscordService({ app, settings, profile, rootPath }) {
+export function initDiscordService({ app, settings, rootPath }) {
     electronApp = app
     appSettings = settings
-    appProfile = profile
     rootDirPath = rootPath
 
-    isEnabled = Boolean(appSettings.discordRichPresence.enabledByDefault && appProfile.allowDiscordRichPresence)
+    isEnabled = Boolean(appSettings.discordRichPresence?.isEnabledByDefault)
 }
 
 export function scheduleDiscordConnect() {
@@ -40,6 +38,8 @@ function startRpcProcess() {
             LISTEN_BUTTON_TEXT: String(appSettings.discordRichPresence.listenButtonText),
             CUSTOM_BUTTON_TEXT: String(appSettings.discordRichPresence.customButtonText),
             CUSTOM_BUTTON_URL: String(appSettings.discordRichPresence.customButtonUrl),
+            DISCORD_IDLE_STATE_TEXT: String(appSettings.discordRichPresence.idleStateText ?? '🌸'),
+            DISCORD_IDLE_LARGE_IMAGE_TEXT: String(appSettings.discordRichPresence.idleLargeImageText ?? '🌺'),
         },
         stdio: ['pipe', 'inherit', 'inherit', 'ipc'],
     })
