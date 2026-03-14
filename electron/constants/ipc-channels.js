@@ -19,4 +19,5 @@ export const IpcChannel = {
     PLAYER_GET_VOLUME: 'player:get-volume',
     PLAYER_NOW_PLAYING: 'player:now-playing',
     LOGS_SAVE: 'logs:save',
+    LOGS_ADD_RENDERER_ERROR: 'logs:add-renderer-error',
 }

@@ -160,6 +160,10 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
 }
 
 function registerLogsHandlers(ipcMain, app) {
+    ipcMain.handle(IpcChannel.LOGS_ADD_RENDERER_ERROR, async (_event, message) => {
+        errorWithBuffer(new Error(String(message)))
+    })
+
     ipcMain.handle(IpcChannel.LOGS_SAVE, async () => {
         try {
             const appDir = app.isPackaged ? dirname(app.getPath('exe')) : app.getAppPath()

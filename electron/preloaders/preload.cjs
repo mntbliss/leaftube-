@@ -22,6 +22,7 @@ const IpcChannel = {
     PLAYER_GET_VOLUME: 'player:get-volume',
     PLAYER_NOW_PLAYING: 'player:now-playing',
     LOGS_SAVE: 'logs:save',
+    LOGS_ADD_RENDERER_ERROR: 'logs:add-renderer-error',
 }
 
 contextBridge.exposeInMainWorld('desktopBridge', {
@@ -71,6 +72,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
     logs: {
         save() {
             return ipcRenderer.invoke(IpcChannel.LOGS_SAVE)
+        },
+        reportError(message) {
+            return ipcRenderer.invoke(IpcChannel.LOGS_ADD_RENDERER_ERROR, message)
         },
     },
     player: {
