@@ -39,9 +39,11 @@ export class YoutubeWindowService {
         }
 
         const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
+        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
         this.youtubeWindow = new this.BrowserWindow({
             show: false,
             resizable: true,
+            icon: iconPath,
             ...getTransparentFrameOptions(isAcrylic),
             webPreferences: getWebPreferences(),
         })

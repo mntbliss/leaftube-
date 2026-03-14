@@ -1,5 +1,7 @@
 /** paths and file names (for stuff like resolve(rootDirPath, ...)) */
 export const Path = {
+    BUILD_DIR: 'build',
+    ICON_FILENAME: 'icon.ico',
     ELECTRON_DIR: 'electron',
     PRELOADERS_DIR: 'preloaders',
     DIST_DIR: 'dist',

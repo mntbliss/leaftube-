@@ -26,12 +26,14 @@ export class MainWindowService {
         const windowHeight = innerHeight + padding * 2
 
         const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
+        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
         this.mainWindow = new this.BrowserWindow({
             width: windowWidth,
             height: windowHeight,
             minWidth: (this.appSettings.window.minWidth || innerWidth) + padding * 2,
             minHeight: (this.appSettings.window.minHeight || innerHeight) + padding * 2,
             resizable: true,
+            icon: iconPath,
             ...getTransparentFrameOptions(this.isAcrylic),
             webPreferences: getWebPreferences({ preloadPath }),
         })

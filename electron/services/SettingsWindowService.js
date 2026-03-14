@@ -26,12 +26,14 @@ export class SettingsWindowService {
 
         const isAcrylic = Boolean(this.appSettings?.window?.isAcrylic)
         const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
+        const iconPath = resolve(this.rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
         this.settingsWindow = new this.BrowserWindow({
             width,
             height,
             minWidth,
             minHeight,
             resizable: false,
+            icon: iconPath,
             ...getTransparentFrameOptions(isAcrylic),
             webPreferences: getWebPreferences({ preloadPath }),
         })
