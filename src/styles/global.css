@@ -671,6 +671,13 @@ input[type='checkbox']:checked::before {
     color: #ffb4b4;
 }
 
+.settings-log-saved {
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--leaf-text);
+    opacity: 0.85;
+}
+
 /* ----- animations ----- */
 
 @keyframes app-pop-sequence {

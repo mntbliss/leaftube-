@@ -1,21 +1,27 @@
 let cachedSettings = null
+let cachedIsRelease = false
 
-export function init(settings) {
-    cachedSettings = settings
+export function init(settings, isRelease) {
+    if (settings != null) cachedSettings = settings
+    if (isRelease !== undefined) cachedIsRelease = Boolean(isRelease)
+}
+
+export function error(...args) {
+    if (!cachedIsRelease) console.error(...args)
 }
 
 export function log(...args) {
-    console.log(...args)
+    if (!cachedIsRelease) console.log(...args)
 }
 
 export function warn(...args) {
-    console.warn(...args)
+    if (!cachedIsRelease) console.warn(...args)
 }
 
 export function debug(...args) {
-    console.debug(...args)
+    if (!cachedIsRelease) console.debug(...args)
 }
 
 export function errorDump(message, error) {
-    console.error(message, error)
+    error(message, error)
 }

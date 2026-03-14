@@ -77,6 +77,23 @@
         }
     }
 
+    const logSaveMessage = ref('')
+    async function saveLogs() {
+        logSaveMessage.value = ''
+        errorText.value = ''
+        try {
+            const result = await window.desktopBridge?.logs?.save?.()
+            if (result?.ok && result?.path) {
+                logSaveMessage.value = `Saved to ${result.path}`
+            } else if (result?.ok === false && result?.error) {
+                setErrorFrom(new Error(result.error), 'Failed to save logs')
+            }
+        } catch (saveLogsError) {
+            LoggerService.errorDump('Save logs failed', saveLogsError)
+            setErrorFrom(saveLogsError, 'Failed to save logs')
+        }
+    }
+
     onMounted(loadSettings)
 </script>
 
@@ -174,10 +191,12 @@
                 </section>
 
                 <p v-if="errorText" class="settings-error">{{ errorText }}</p>
+                <p v-if="logSaveMessage" class="settings-log-saved">{{ logSaveMessage }}</p>
             </main>
 
             <footer class="settings-footer">
-                <button class="settings-button" type="button" :disabled="isSaving" @click="resetToDefaults">Reset all 🔄️</button>
+                <button class="settings-button" type="button" :disabled="isSaving" @click="resetToDefaults">reset all 🔄️</button>
+                <button class="settings-button" type="button" :disabled="isSaving" @click="saveLogs">save logs 📃</button>
                 <button
                     class="settings-button save-button"
                     :class="{ 'is-non-interactable': isSaving || !hasChanges }"
