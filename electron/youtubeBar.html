@@ -112,32 +112,9 @@
 <body>
   <div class="bar-left">
     <span aria-hidden="true">🌿</span>
-    <button type="button" class="bar-button" aria-label="Home" onclick="window.leafYoutubeBar?.goHome()">
-      <img class="bar-icon" src="../public/icons/home.png" alt="" />
-    </button>
-    <button type="button" class="bar-button" aria-label="Recommendations"
-      onclick="window.leafYoutubeBar?.goRecommendations()">
-      <img class="bar-icon" src="../public/icons/recommendations.png" alt="" />
-    </button>
-    <button type="button" class="bar-button" aria-label="Saved" onclick="window.leafYoutubeBar?.goSaved()">
-      <img class="bar-icon" src="../public/icons/saved.png" alt="" />
-    </button>
   </div>
-  <div class="bar-center">
-    <input type="text" class="bar-search-input" id="bar-search-input" placeholder="Search" aria-label="Search"
-      onkeydown="if (event.key === 'Enter') window.leafYoutubeBar?.runSearch(document.getElementById('bar-search-input').value)" />
-    <button type="button" class="bar-button" aria-label="Search"
-      onclick="window.leafYoutubeBar?.runSearch(document.getElementById('bar-search-input').value)">
-      <img class="bar-icon" src="../public/icons/search.png" alt="" />
-    </button>
-    <button type="button" class="bar-button" aria-label="Sign in" onclick="window.leafYoutubeBar?.openSignIn()">
-      <img class="bar-icon" src="../public/icons/signin.png" alt="" />
-    </button>
-  </div>
+  <div class="bar-center"></div>
   <div class="bar-right">
-    <button type="button" class="bar-button" aria-label="Settings" onclick="window.leafYoutubeBar?.openAppMenu()">
-      <img class="bar-icon" src="../public/icons/settings.png" alt="" />
-    </button>
     <button type="button" class="bar-button" aria-label="minimize" onclick="window.leafYoutubeBar?.shrink()">
       <img class="bar-icon" src="../public/icons/minimize.png" alt="" />
     </button>

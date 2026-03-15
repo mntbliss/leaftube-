@@ -4,10 +4,9 @@
     --leaf-scroll-track: rgba(17, 17, 17, 0.562);
     --leaf-scroll-thumb: #50a05c;
     --leaf-scroll-size: 4px;
-    --ytmusic-guide-width: 0px !important;
-    --ytmusic-base-page-padding-bottom: 0px !important;
-    --ytmusic-nav-bar-height: 0px !important;
-    --ytmusic-guide-width: 0px !important;
+    --ytmusic-guide-width: 50px !important;
+    --ytmusic-base-page-padding-bottom: 5px !important;
+    --ytmusic-nav-bar-height: 48px !important;
 }
 
 /* safe nets for yt clingy behaviour */
@@ -16,17 +15,44 @@
 }
 
 /* safe nets for yt clingy behaviour */
-ytmusic-app-layout>#content {
+ytmusic-app-layout > #content {
     padding-bottom: 0px !important;
 }
 
 /* safe nets for yt clingy behaviour */
-mini-guide-background,
+/* mini-guide-background,
 #mini-guide-renderer,
 #mini-guide,
 mini-guide,
-#guide {
+*/
+#guide,
+#mini-guide-background {
     display: none !important;
+}
+
+#mini-guide {
+    margin-top: -35px !important;
+}
+
+mini-guide-renderer {
+    padding: 0 !important;
+}
+
+/* vertical items centered (nav-bar) */
+ytmusic-guide-section-renderer,
+.ytmusic-guide-renderer,
+ytmusic-guide-section-renderer > #items {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+/* vertical items centered (nav-bar) */
+ytmusic-guide-entry-renderer > .ytmusic-guide-entry-renderer {
+    width: 48px !important;
+    padding: 0px !important;
+    height: 24px !important;
 }
 
 :root {
@@ -74,7 +100,55 @@ body.is-content-visible ytmusic-app {
 }
 
 ytmusic-app-layout {
-    --ytmusic-guide-width: 80px !important;
+    --ytmusic-guide-width: 48px !important;
+}
+
+/* mini-guide: visible, collapsed by default; expanded = 48x48 icon-only boxes */
+#guide,
+mini-guide,
+#mini-guide,
+#mini-guide-renderer,
+mini-guide-background {
+    display: block !important;
+}
+
+ytmusic-guide-renderer {
+    width: 48px !important;
+}
+
+/* expanded state: click opens wider strip with 48x48 icon boxes */
+ytmusic-app-layout[guide-opened] ytmusic-guide-renderer,
+ytmusic-app-layout[expanded] ytmusic-guide-renderer,
+#guide[expanded] ytmusic-guide-renderer {
+    width: 48px !important;
+}
+
+/* each guide entry: 48x48 box, icon only */
+ytmusic-guide-entry-renderer .title,
+ytmusic-guide-entry-renderer .subtitle,
+ytmusic-guide-entry-renderer yt-formatted-string {
+    display: none !important;
+}
+
+ytmusic-guide-entry-renderer {
+    width: 48px !important;
+    min-height: 48px !important;
+}
+
+ytmusic-guide-entry-renderer tp-yt-paper-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+}
+
+ytmusic-guide-entry-renderer .guide-icon {
+    margin: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
 }
 
 #nav-bar-background {
@@ -87,17 +161,20 @@ ytmusic-app-layout {
 
 #logo,
 ytmusic-brand-logo-renderer,
-/* #header, */
 ytmusic-pivot-bar-renderer,
-ytmusic-nav-bar,
+/* ytmusic-nav-bar, */
+.left-content,
 #divider,
 .descriptive-text,
 #nav-bar-divider,
 .ytmusic-logo,
-#mini-guide-background,
 #sign-in-button,
 .cast-button {
     display: none !important;
+}
+
+ytmusic-nav-bar {
+    padding-top: 20px !important;
 }
 
 /* strip gradients, borders, and shadows from all YT Music content */
