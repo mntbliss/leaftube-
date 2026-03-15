@@ -122,7 +122,7 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
     })
 
     ipcMain.handle(IpcChannel.UI_YOUTUBE_OPEN_APP_MENU, async () => {
-        if (youtubeWindowService) youtubeWindowService.openAppMenuInView()
+        if (youtubeWindowService) youtubeWindowService.openSettingsInView()
         return {}
     })
 }

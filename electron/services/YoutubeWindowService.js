@@ -105,7 +105,7 @@ export class YoutubeWindowService {
             this.applyStoredVolume()
             const isFirstLoad = this.isFirstYoutubeLoad && shouldShow
             if (isFirstLoad) this.isFirstYoutubeLoad = false
-            showSmooth(this, isFirstLoad, { waitFrames: true })
+            showSmooth(this, isFirstLoad, { waitFrames: isFirstLoad })
         })
 
         this.youtubeWindow.on('close', event => {
@@ -158,7 +158,7 @@ export class YoutubeWindowService {
         const script = isVisible
             ? "document && document.body && document.body.classList.add('is-content-visible');"
             : "document && document.body && document.body.classList.remove('is-content-visible');"
-        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(ignore) {} })();`).catch(() => {})
+        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(error) {} })();`).catch(() => {})
     }
 
     setContentAreaOpacity(opacityValue) {
@@ -307,6 +307,8 @@ export class YoutubeWindowService {
 
     navigateTo(path) {
         if (!this.youtubeView) return
+        this.setContentVisible(false)
+        this.setContentAreaOpacity(0)
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
         const segment = path && String(path).startsWith('/') ? path : `/${path || ''}`
         const url = segment === '/' ? base : `${base}${segment}`
@@ -317,6 +319,8 @@ export class YoutubeWindowService {
         if (!this.youtubeView) return
         const searchQuery = String(query || '').trim()
         if (!searchQuery) return
+        this.setContentVisible(false)
+        this.setContentAreaOpacity(0)
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
         const url = `${base}/search?q=${encodeURIComponent(searchQuery)}`
         this.youtubeView.webContents.loadURL(url).catch(() => {})
@@ -324,39 +328,20 @@ export class YoutubeWindowService {
 
     openSignInInView() {
         if (!this.youtubeView) return
-        const script = `(function(){ try { setTimeout(function(){
-          var signInButton = document.querySelector('#sign-in-button') || document.querySelector('ytmusic-nav-bar a[href*="accounts.google.com"]');
-          if (signInButton) {
-            signInButton.style.setProperty('display','block','important');
-            signInButton.style.setProperty('visibility','visible','important');
-            signInButton.click();
+        const script = `(function(){ try {
+          var signInLink = document.querySelector('a[href*="accounts.google.com"]') || document.querySelector('a[href*="ServiceLogin"]') || document.querySelector('.sign-in-link') || document.querySelector('[class*="sign-in"] a');
+          if (signInLink && signInLink.href) {
+            window.location.href = signInLink.href;
           }
-        }, 0); } catch(error) {} })()`
+        } catch(error) {} })()`
         runScriptInView(this.youtubeView, script).catch(() => {})
     }
 
-    openAppMenuInView() {
+    openSettingsInView() {
         if (!this.youtubeView) return
-        const script = `(function(){ try {
-          setTimeout(function(){
-            var dialog = document.querySelector('ytmusic-dialog');
-            if (dialog) {
-              if (typeof dialog.open !== 'undefined') { dialog.open = true; return; }
-              if (typeof dialog.show === 'function') { dialog.show(); return; }
-              if (dialog.setAttribute) { dialog.setAttribute('opened', ''); return; }
-            }
-            var nav = document.querySelector('ytmusic-nav-bar');
-            if (!nav) return;
-            var accountButton = nav.querySelector('#account-button') || nav.querySelector('.right-content button') || nav.querySelector('.right-content tp-yt-paper-icon-button');
-            if (accountButton) {
-              accountButton.click();
-              setTimeout(function(){
-                var menuItem = document.querySelector('ytmusic-menu-popup-renderer tp-yt-paper-item:nth-child(2)') || document.querySelector('tp-yt-paper-listbox tp-yt-paper-item:nth-child(2)');
-                if (menuItem) menuItem.click();
-              }, 250);
-            }
-          }, 0);
-        } catch(error) {} })()`
-        runScriptInView(this.youtubeView, script).catch(() => {})
+        this.setContentVisible(false)
+        this.setContentAreaOpacity(0)
+        const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
+        this.youtubeView.webContents.loadURL(`${base}/settings`).catch(() => {})
     }
 }
