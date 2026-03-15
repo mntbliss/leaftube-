@@ -3,6 +3,7 @@ import { Path } from '../constants/path.js'
 import { PlayerAction } from '../constants/player-actions.js'
 import { runScriptInView } from '../helpers/view-helpers.js'
 import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
+import { showSmooth, hideSmooth } from '../helpers/youtube-smooth-helpers.js'
 import { readNowPlaying, clickPlayerButton, clickPreviousSmart, seekPlayerToFraction, setMediaVolume, setMediaMuted, getMediaVolume } from './YoutubeHandler.js'
 
 export class YoutubeWindowService {
@@ -35,11 +36,7 @@ export class YoutubeWindowService {
             if (!shouldShow) return
             if (!this.youtubeWindow.isDestroyed()) {
                 if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
-                this.youtubeWindow.setOpacity(0)
-                this.youtubeWindow.show()
-                this.youtubeWindow.focus()
-                this.resizeView()
-                this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
+                showSmooth(this, true, { waitFrames: false })
             }
             return
         }
@@ -102,30 +99,13 @@ export class YoutubeWindowService {
         }
 
         this.youtubeView.webContents.on('dom-ready', () => {
-            this.injectFadeCssEarly()
             this.injectDebloatCss()
             this.injectYoutubeDomScripts()
             if (this.isYoutubeDeveloperConsoleEnabled) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
             this.applyStoredVolume()
-            if (this.isFirstYoutubeLoad && shouldShow) {
-                this.isFirstYoutubeLoad = false
-                const waitTwoFrames = "new Promise(function(resolve){ requestAnimationFrame(function(){ requestAnimationFrame(resolve) }) })"
-                runScriptInView(this.youtubeView, waitTwoFrames).then(() => {
-                    this.youtubeWindow.setOpacity(0)
-                    this.youtubeWindow.show()
-                    this.youtubeWindow.focus()
-                    this.resizeView()
-                    this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
-                }).catch(() => {
-                    this.youtubeWindow.setOpacity(0)
-                    this.youtubeWindow.show()
-                    this.youtubeWindow.focus()
-                    this.resizeView()
-                    this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
-                })
-            } else {
-                this.setContentVisible(true)
-            }
+            const isFirstLoad = this.isFirstYoutubeLoad && shouldShow
+            if (isFirstLoad) this.isFirstYoutubeLoad = false
+            showSmooth(this, isFirstLoad, { waitFrames: true })
         })
 
         this.youtubeWindow.on('close', event => {
@@ -170,14 +150,7 @@ export class YoutubeWindowService {
 
     hideWindow() {
         if (!this.youtubeWindow) return
-
-        this.setContentVisible(false)
-        this.animateWindowOpacity(1, 0, 120, () => {
-            try {
-                if (this.youtubeWindow) this.youtubeWindow.hide()
-                if (this.youtubeWindow && !this.youtubeWindow.isDestroyed()) this.youtubeWindow.setOpacity(1)
-            } catch {}
-        })
+        hideSmooth(this)
     }
 
     setContentVisible(visible) {
@@ -205,12 +178,6 @@ export class YoutubeWindowService {
             }
         }
         tick()
-    }
-
-    injectFadeCssEarly() {
-        if (!this.youtubeView) return
-        const fadeCss = 'body ytmusic-app{opacity:0!important;transition:opacity 260ms ease-out!important}body.leaf-content-visible ytmusic-app{opacity:1!important}'
-        this.youtubeView.webContents.insertCSS(fadeCss).catch(() => {})
     }
 
     injectDebloatCss() {
