@@ -14,13 +14,18 @@
 #content-wrapper.ytmusic-browse-response {
     margin-left: 0px !important;
 }
+
 /* safe nets for yt clingy behaviour */
 ytmusic-app-layout > #content {
     padding-bottom: 0px !important;
 }
+
 /* safe nets for yt clingy behaviour */
 mini-guide-background,
-mini-guide {
+#mini-guide-renderer,
+#mini-guide,
+mini-guide,
+#guide {
     display: none !important;
 }
 
@@ -48,7 +53,10 @@ mini-guide {
 }
 
 /* single flat background for everything */
-html,
+html {
+    background: transparent !important;
+    background-image: none !important;
+}
 body {
     background: var(--leaf-background) !important;
     background-image: none !important;
@@ -58,6 +66,10 @@ body {
 body ytmusic-app {
     opacity: 0 !important;
     transition: opacity 260ms ease-out !important;
+}
+
+body.leaf-content-visible ytmusic-app {
+    opacity: 1 !important;
 }
 
 ytmusic-app-layout {
