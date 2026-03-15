@@ -4,6 +4,24 @@
     --leaf-scroll-track: rgba(17, 17, 17, 0.562);
     --leaf-scroll-thumb: #50a05c;
     --leaf-scroll-size: 4px;
+    --ytmusic-guide-width: 0px !important;
+    --ytmusic-base-page-padding-bottom: 0px !important;
+    --ytmusic-nav-bar-height: 0px !important;
+    --ytmusic-guide-width: 0px !important;
+}
+
+/* safe nets for yt clingy behaviour */
+#content-wrapper.ytmusic-browse-response {
+    margin-left: 0px !important;
+}
+/* safe nets for yt clingy behaviour */
+ytmusic-app-layout > #content {
+    padding-bottom: 0px !important;
+}
+/* safe nets for yt clingy behaviour */
+mini-guide-background,
+mini-guide {
+    display: none !important;
 }
 
 :root {
@@ -42,15 +60,6 @@ body ytmusic-app {
     transition: opacity 260ms ease-out !important;
 }
 
-body.leaf-content-visible ytmusic-app {
-    opacity: 1 !important;
-}
-
-/* hide pivot bar only; do NOT hide #mini-guide or u cant open navbar by click */
-ytmusic-pivot-bar-renderer {
-    display: none !important;
-}
-
 ytmusic-app-layout {
     --ytmusic-guide-width: 80px !important;
 }
@@ -64,7 +73,10 @@ ytmusic-app-layout {
 }
 
 #logo,
+ytmusic-brand-logo-renderer,
 /* #header, */
+ytmusic-pivot-bar-renderer,
+ytmusic-nav-bar,
 #divider,
 .descriptive-text,
 #nav-bar-divider,
@@ -98,11 +110,6 @@ ytmusic-browse-response,
     border: none !important;
 }
 
-/* keep logo hidden */
-ytmusic-brand-logo-renderer {
-    display: none !important;
-}
-
 /* gentle solid strip for search/header so it's still usable */
 ytmusic-nav-bar {
     background: transparent !important;
@@ -133,12 +140,6 @@ ytmusic-guide-renderer {
     width: 80px !important;
 }
 
-/* when body has this class, sidebar is fully hidden; toggled by menu click in JS */
-body.leaf-guide-hidden #mini-guide,
-body.leaf-guide-hidden tp-yt-app-drawer.ytmusic-app {
-    display: none !important;
-}
-
 ytmusic-guide-entry-renderer {
     width: 100% !important;
 }
@@ -153,21 +154,6 @@ ytmusic-guide-entry-renderer tp-yt-paper-item {
 
 ytmusic-guide-entry-renderer .guide-icon {
     margin: 0 auto !important;
-}
-
-/* replace header "Sign in" text with leaf */
-ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='Sign in'],
-ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='🌿'] {
-    width: auto !important;
-    min-width: 0 !important;
-    font-size: 0 !important;
-    padding: 4px 10px !important;
-}
-
-ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='Sign in']::before,
-ytmusic-nav-bar .yt-spec-button-shape-next[aria-label='🌿']::before {
-    content: '🌿';
-    font-size: 13px;
 }
 
 /* kill immersive hero full-bleed background image (this cringe ass greenish-cyanish type of shit on the back near header) */
