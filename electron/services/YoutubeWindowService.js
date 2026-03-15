@@ -153,12 +153,24 @@ export class YoutubeWindowService {
         hideSmooth(this)
     }
 
-    setContentVisible(visible) {
-        if (!this.youtubeView) return Promise.resolve()
-        const script = visible
-            ? "document && document.body && document.body.classList.add('leaf-content-visible');"
-            : "document && document.body && document.body.classList.remove('leaf-content-visible');"
-        return runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(ignore) {} })();`)
+    setContentVisible(isVisible) {
+        if (!this.youtubeView) return
+        const script = isVisible
+            ? "document && document.body && document.body.classList.add('is-content-visible');"
+            : "document && document.body && document.body.classList.remove('is-content-visible');"
+        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(ignore) {} })();`).catch(() => {})
+    }
+
+    setContentAreaOpacity(opacityValue) {
+        if (!this.youtubeView) return
+        const value = Number(opacityValue)
+        if (!Number.isFinite(value)) return
+        const clamped = Math.max(0, Math.min(1, value))
+        const script = `(function(){ try {
+          var contentRoot = document.body && document.body.firstElementChild;
+          if (contentRoot) { contentRoot.style.transition = 'opacity 200ms ease-out'; contentRoot.style.opacity = ${clamped}; }
+        } catch(ignore) {} })();`
+        runScriptInView(this.youtubeView, script).catch(() => {})
     }
 
     animateWindowOpacity(fromValue, toValue, durationMs, onComplete) {

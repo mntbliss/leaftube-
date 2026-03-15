@@ -16,7 +16,7 @@
 }
 
 /* safe nets for yt clingy behaviour */
-ytmusic-app-layout > #content {
+ytmusic-app-layout>#content {
     padding-bottom: 0px !important;
 }
 
@@ -57,6 +57,7 @@ html {
     background: transparent !important;
     background-image: none !important;
 }
+
 body {
     background: var(--leaf-background) !important;
     background-image: none !important;
@@ -68,7 +69,7 @@ body ytmusic-app {
     transition: opacity 260ms ease-out !important;
 }
 
-body.leaf-content-visible ytmusic-app {
+body.is-content-visible ytmusic-app {
     opacity: 1 !important;
 }
 
