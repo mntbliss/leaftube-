@@ -21,7 +21,7 @@ export class YoutubeWindowService {
         this.youtubeWindow = undefined
         this.youtubeView = undefined
         this.barView = undefined
-        this.barHeight = 40
+        this.barHeight = 45
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
@@ -32,10 +32,13 @@ export class YoutubeWindowService {
     ensureWindow(shouldShow = true) {
         if (this.youtubeWindow) {
             if (!shouldShow) return
-            this.youtubeWindow.show()
-            this.youtubeWindow.focus()
-            this.resizeView()
-            this.setContentVisible(true)
+            if (!this.youtubeWindow.isDestroyed()) {
+                if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
+                this.youtubeWindow.show()
+                this.youtubeWindow.focus()
+                this.resizeView()
+                setTimeout(() => this.setContentVisible(true), 0)
+            }
             return
         }
 
@@ -104,7 +107,7 @@ export class YoutubeWindowService {
             this.applyStoredVolume()
         })
 
-        this.youtubeWindow.on('close', (event) => {
+        this.youtubeWindow.on('close', event => {
             if (this.app.leafQuitting) return
             event.preventDefault()
             this.hideWindow()
@@ -117,8 +120,10 @@ export class YoutubeWindowService {
         })
 
         if (shouldShow) {
+            if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
             this.youtubeWindow.show()
             this.youtubeWindow.focus()
+            this.resizeView()
             this.applyStoredVolume()
         }
     }
@@ -171,41 +176,47 @@ export class YoutubeWindowService {
 
     injectYoutubeDomScripts() {
         if (!this.youtubeView) return
+        // run in next tick to avoid triggering page Proxy/toString stack overflow during load
         const guideScript = `(function() {
-          document.body.classList.add('leaf-guide-hidden')
-          function toggleGuideVisibility() { document.body.classList.toggle('leaf-guide-hidden') }
-          function bindGuideMenuButton() {
-            var guideMenuButton = document.querySelector('ytmusic-nav-bar .left-content button, ytmusic-nav-bar tp-yt-paper-icon-button')
-            if (guideMenuButton && !guideMenuButton._leafBound) {
-              guideMenuButton._leafBound = true
-              guideMenuButton.addEventListener('click', function() { setTimeout(toggleGuideVisibility, 50) })
-            }
-          }
-          bindGuideMenuButton()
-          setTimeout(bindGuideMenuButton, 800)
-          new MutationObserver(bindGuideMenuButton).observe(document.body, { childList: true, subtree: true })
+          setTimeout(function() {
+            try {
+              document.body.classList.add('leaf-guide-hidden');
+              function toggleGuideVisibility() { document.body.classList.toggle('leaf-guide-hidden'); }
+              function bindGuideMenuButton() {
+                var guideMenuButton = document.querySelector('ytmusic-nav-bar .left-content button, ytmusic-nav-bar tp-yt-paper-icon-button');
+                if (guideMenuButton && !guideMenuButton._leafBound) {
+                  guideMenuButton._leafBound = true;
+                  guideMenuButton.addEventListener('click', function() { setTimeout(toggleGuideVisibility, 50); });
+                }
+              }
+              bindGuideMenuButton();
+              setTimeout(bindGuideMenuButton, 800);
+              if (document.body) new MutationObserver(bindGuideMenuButton).observe(document.body, { childList: true, subtree: true });
+            } catch(error) {}
+          }, 0);
         })()`
         runScriptInView(this.youtubeView, guideScript).catch(() => {})
 
-        runScriptInView(this.youtubeView, `const signInLink = document.querySelector('.sign-in-link'); if (signInLink) signInLink.innerText = '🚪🍃'`).catch(
+        runScriptInView(this.youtubeView, `setTimeout(function(){ try { var signInLink = document.querySelector('.sign-in-link'); if (signInLink) signInLink.innerText = '🚪🍃'; } catch(ignore) {} }, 0)`).catch(
             () => {}
         )
 
         if (!this.isVideosInsteadOfPicture) return
         const videoModeScript = `(function() {
-          function switchToVideoTabIfNotActive() {
-            if (document.body.classList.contains('video-mode')) return
-            var videoTabSelectors = ['ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]', 'ytmusic-player-page [role="tab"][tab-id="VIDEO"]']
-            for (var selectorIndex = 0; selectorIndex < videoTabSelectors.length; selectorIndex++) {
-              var videoTabElement = document.querySelector(videoTabSelectors[selectorIndex])
-              if (videoTabElement) {
-                videoTabElement.click()
-                break
+          setTimeout(function() {
+            try {
+              function switchToVideoTabIfNotActive() {
+                if (document.body.classList.contains('video-mode')) return;
+                var videoTabSelectors = ['ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]', 'ytmusic-player-page [role="tab"][tab-id="VIDEO"]'];
+                for (var selectorIndex = 0; selectorIndex < videoTabSelectors.length; selectorIndex++) {
+                  var videoTabElement = document.querySelector(videoTabSelectors[selectorIndex]);
+                  if (videoTabElement) { videoTabElement.click(); break; }
+                }
               }
-            }
-          }
-          switchToVideoTabIfNotActive()
-          setInterval(switchToVideoTabIfNotActive, 3000)
+              switchToVideoTabIfNotActive();
+              setInterval(switchToVideoTabIfNotActive, 3000);
+            } catch(error) {}
+          }, 0);
         })()`
         runScriptInView(this.youtubeView, videoModeScript).catch(() => {})
     }
@@ -292,5 +303,60 @@ export class YoutubeWindowService {
     async getVolume() {
         if (!this.youtubeView) return { volumeLevel: 1, isMuted: false }
         return getMediaVolume(this.youtubeView)
+    }
+
+    navigateTo(path) {
+        if (!this.youtubeView) return
+        const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
+        const segment = path && String(path).startsWith('/') ? path : `/${path || ''}`
+        const url = segment === '/' ? base : `${base}${segment}`
+        this.youtubeView.webContents.loadURL(url).catch(() => {})
+    }
+
+    runSearch(query) {
+        if (!this.youtubeView) return
+        const searchQuery = String(query || '').trim()
+        if (!searchQuery) return
+        const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
+        const url = `${base}/search?q=${encodeURIComponent(searchQuery)}`
+        this.youtubeView.webContents.loadURL(url).catch(() => {})
+    }
+
+    openSignInInView() {
+        if (!this.youtubeView) return
+        const script = `(function(){ try { setTimeout(function(){
+          var signInButton = document.querySelector('#sign-in-button') || document.querySelector('ytmusic-nav-bar a[href*="accounts.google.com"]');
+          if (signInButton) {
+            signInButton.style.setProperty('display','block','important');
+            signInButton.style.setProperty('visibility','visible','important');
+            signInButton.click();
+          }
+        }, 0); } catch(error) {} })()`
+        runScriptInView(this.youtubeView, script).catch(() => {})
+    }
+
+    openAppMenuInView() {
+        if (!this.youtubeView) return
+        const script = `(function(){ try {
+          setTimeout(function(){
+            var dialog = document.querySelector('ytmusic-dialog');
+            if (dialog) {
+              if (typeof dialog.open !== 'undefined') { dialog.open = true; return; }
+              if (typeof dialog.show === 'function') { dialog.show(); return; }
+              if (dialog.setAttribute) { dialog.setAttribute('opened', ''); return; }
+            }
+            var nav = document.querySelector('ytmusic-nav-bar');
+            if (!nav) return;
+            var accountButton = nav.querySelector('#account-button') || nav.querySelector('.right-content button') || nav.querySelector('.right-content tp-yt-paper-icon-button');
+            if (accountButton) {
+              accountButton.click();
+              setTimeout(function(){
+                var menuItem = document.querySelector('ytmusic-menu-popup-renderer tp-yt-paper-item:nth-child(2)') || document.querySelector('tp-yt-paper-listbox tp-yt-paper-item:nth-child(2)');
+                if (menuItem) menuItem.click();
+              }, 250);
+            }
+          }, 0);
+        } catch(error) {} })()`
+        runScriptInView(this.youtubeView, script).catch(() => {})
     }
 }

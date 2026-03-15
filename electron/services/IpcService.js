@@ -105,6 +105,26 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         if (settingsWindowService) settingsWindowService.ensureWindow()
         return {}
     })
+
+    ipcMain.handle(IpcChannel.UI_YOUTUBE_NAVIGATE, async (_event, path) => {
+        if (youtubeWindowService) youtubeWindowService.navigateTo(path)
+        return {}
+    })
+
+    ipcMain.handle(IpcChannel.UI_YOUTUBE_SEARCH, async (_event, query) => {
+        if (youtubeWindowService) youtubeWindowService.runSearch(query)
+        return {}
+    })
+
+    ipcMain.handle(IpcChannel.UI_YOUTUBE_OPEN_SIGN_IN, async () => {
+        if (youtubeWindowService) youtubeWindowService.openSignInInView()
+        return {}
+    })
+
+    ipcMain.handle(IpcChannel.UI_YOUTUBE_OPEN_APP_MENU, async () => {
+        if (youtubeWindowService) youtubeWindowService.openAppMenuInView()
+        return {}
+    })
 }
 
 function registerPlayerHandlers(ipcMain, youtubeWindowService) {

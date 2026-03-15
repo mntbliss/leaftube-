@@ -17,6 +17,7 @@
 
     body {
       width: 100vw;
+      min-height: 45px;
       height: 100vh;
       background: rgba(5, 6, 7, 0.9);
       color: #fef6e4;
@@ -24,6 +25,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
       padding: 0 14px;
       -webkit-app-region: drag;
     }
@@ -31,15 +33,49 @@
     .bar-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 13px;
-      opacity: 0.85;
+      opacity: 0.9;
+      flex-shrink: 0;
+    }
+
+    .bar-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .bar-search-input {
+      -webkit-app-region: no-drag;
+      flex: 1;
+      min-width: 120px;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(11, 15, 18, 0.527);
+      color: #fef6e4;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .bar-search-input::placeholder {
+      color: rgba(254, 246, 228, 0.5);
+    }
+
+    .bar-search-input:focus {
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .bar-right {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     /* same as mini-app .icon-button */
@@ -76,8 +112,32 @@
 <body>
   <div class="bar-left">
     <span aria-hidden="true">🌿</span>
+    <button type="button" class="bar-button" aria-label="Home" onclick="window.leafYoutubeBar?.goHome()">
+      <img class="bar-icon" src="../public/icons/home.png" alt="" />
+    </button>
+    <button type="button" class="bar-button" aria-label="Recommendations"
+      onclick="window.leafYoutubeBar?.goRecommendations()">
+      <img class="bar-icon" src="../public/icons/recommendations.png" alt="" />
+    </button>
+    <button type="button" class="bar-button" aria-label="Saved" onclick="window.leafYoutubeBar?.goSaved()">
+      <img class="bar-icon" src="../public/icons/saved.png" alt="" />
+    </button>
+  </div>
+  <div class="bar-center">
+    <input type="text" class="bar-search-input" id="bar-search-input" placeholder="Search" aria-label="Search"
+      onkeydown="if (event.key === 'Enter') window.leafYoutubeBar?.runSearch(document.getElementById('bar-search-input').value)" />
+    <button type="button" class="bar-button" aria-label="Search"
+      onclick="window.leafYoutubeBar?.runSearch(document.getElementById('bar-search-input').value)">
+      <img class="bar-icon" src="../public/icons/search.png" alt="" />
+    </button>
+    <button type="button" class="bar-button" aria-label="Sign in" onclick="window.leafYoutubeBar?.openSignIn()">
+      <img class="bar-icon" src="../public/icons/signin.png" alt="" />
+    </button>
   </div>
   <div class="bar-right">
+    <button type="button" class="bar-button" aria-label="Settings" onclick="window.leafYoutubeBar?.openAppMenu()">
+      <img class="bar-icon" src="../public/icons/settings.png" alt="" />
+    </button>
     <button type="button" class="bar-button" aria-label="minimize" onclick="window.leafYoutubeBar?.shrink()">
       <img class="bar-icon" src="../public/icons/minimize.png" alt="" />
     </button>
