@@ -22,6 +22,7 @@ export class YoutubeWindowService {
         this.youtubeView = undefined
         this.barView = undefined
         this.barHeight = 45
+        this.isFirstYoutubeLoad = true
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
@@ -34,10 +35,11 @@ export class YoutubeWindowService {
             if (!shouldShow) return
             if (!this.youtubeWindow.isDestroyed()) {
                 if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
+                this.youtubeWindow.setOpacity(0)
                 this.youtubeWindow.show()
                 this.youtubeWindow.focus()
                 this.resizeView()
-                setTimeout(() => this.setContentVisible(true), 0)
+                this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
             }
             return
         }
@@ -100,11 +102,30 @@ export class YoutubeWindowService {
         }
 
         this.youtubeView.webContents.on('dom-ready', () => {
+            this.injectFadeCssEarly()
             this.injectDebloatCss()
             this.injectYoutubeDomScripts()
             if (this.isYoutubeDeveloperConsoleEnabled) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
-            this.setContentVisible(true)
             this.applyStoredVolume()
+            if (this.isFirstYoutubeLoad && shouldShow) {
+                this.isFirstYoutubeLoad = false
+                const waitTwoFrames = "new Promise(function(resolve){ requestAnimationFrame(function(){ requestAnimationFrame(resolve) }) })"
+                runScriptInView(this.youtubeView, waitTwoFrames).then(() => {
+                    this.youtubeWindow.setOpacity(0)
+                    this.youtubeWindow.show()
+                    this.youtubeWindow.focus()
+                    this.resizeView()
+                    this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
+                }).catch(() => {
+                    this.youtubeWindow.setOpacity(0)
+                    this.youtubeWindow.show()
+                    this.youtubeWindow.focus()
+                    this.resizeView()
+                    this.animateWindowOpacity(0, 1, 260, () => this.setContentVisible(true))
+                })
+            } else {
+                this.setContentVisible(true)
+            }
         })
 
         this.youtubeWindow.on('close', event => {
@@ -117,14 +138,13 @@ export class YoutubeWindowService {
             this.youtubeWindow = undefined
             this.youtubeView = undefined
             this.barView = undefined
+            this.isFirstYoutubeLoad = true
         })
 
         if (shouldShow) {
             if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
+        } else {
             this.youtubeWindow.show()
-            this.youtubeWindow.focus()
-            this.resizeView()
-            this.applyStoredVolume()
         }
     }
 
@@ -152,20 +172,45 @@ export class YoutubeWindowService {
         if (!this.youtubeWindow) return
 
         this.setContentVisible(false)
-
-        setTimeout(() => {
+        this.animateWindowOpacity(1, 0, 120, () => {
             try {
                 if (this.youtubeWindow) this.youtubeWindow.hide()
+                if (this.youtubeWindow && !this.youtubeWindow.isDestroyed()) this.youtubeWindow.setOpacity(1)
             } catch {}
-        }, 260)
+        })
     }
 
     setContentVisible(visible) {
-        if (!this.youtubeView) return
+        if (!this.youtubeView) return Promise.resolve()
         const script = visible
             ? "document && document.body && document.body.classList.add('leaf-content-visible');"
             : "document && document.body && document.body.classList.remove('leaf-content-visible');"
-        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(error){} })();`).catch(() => {})
+        return runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(ignore) {} })();`)
+    }
+
+    animateWindowOpacity(fromValue, toValue, durationMs, onComplete) {
+        if (!this.youtubeWindow || this.youtubeWindow.isDestroyed()) return
+        const startTime = Date.now()
+        const tick = () => {
+            if (!this.youtubeWindow || this.youtubeWindow.isDestroyed()) return
+            const elapsed = Date.now() - startTime
+            const progress = Math.min(1, elapsed / durationMs)
+            const eased = progress * (2 - progress)
+            const current = fromValue + (toValue - fromValue) * eased
+            this.youtubeWindow.setOpacity(current)
+            if (progress < 1) {
+                setTimeout(tick, 16)
+            } else if (typeof onComplete === 'function') {
+                onComplete()
+            }
+        }
+        tick()
+    }
+
+    injectFadeCssEarly() {
+        if (!this.youtubeView) return
+        const fadeCss = 'body ytmusic-app{opacity:0!important;transition:opacity 260ms ease-out!important}body.leaf-content-visible ytmusic-app{opacity:1!important}'
+        this.youtubeView.webContents.insertCSS(fadeCss).catch(() => {})
     }
 
     injectDebloatCss() {
@@ -176,30 +221,6 @@ export class YoutubeWindowService {
 
     injectYoutubeDomScripts() {
         if (!this.youtubeView) return
-        // run in next tick to avoid triggering page Proxy/toString stack overflow during load
-        const guideScript = `(function() {
-          setTimeout(function() {
-            try {
-              document.body.classList.add('leaf-guide-hidden');
-              function toggleGuideVisibility() { document.body.classList.toggle('leaf-guide-hidden'); }
-              function bindGuideMenuButton() {
-                var guideMenuButton = document.querySelector('ytmusic-nav-bar .left-content button, ytmusic-nav-bar tp-yt-paper-icon-button');
-                if (guideMenuButton && !guideMenuButton._leafBound) {
-                  guideMenuButton._leafBound = true;
-                  guideMenuButton.addEventListener('click', function() { setTimeout(toggleGuideVisibility, 50); });
-                }
-              }
-              bindGuideMenuButton();
-              setTimeout(bindGuideMenuButton, 800);
-              if (document.body) new MutationObserver(bindGuideMenuButton).observe(document.body, { childList: true, subtree: true });
-            } catch(error) {}
-          }, 0);
-        })()`
-        runScriptInView(this.youtubeView, guideScript).catch(() => {})
-
-        runScriptInView(this.youtubeView, `setTimeout(function(){ try { var signInLink = document.querySelector('.sign-in-link'); if (signInLink) signInLink.innerText = '🚪🍃'; } catch(ignore) {} }, 0)`).catch(
-            () => {}
-        )
 
         if (!this.isVideosInsteadOfPicture) return
         const videoModeScript = `(function() {
