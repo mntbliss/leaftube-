@@ -101,6 +101,7 @@ export class YoutubeWindowService {
             this.injectYoutubeDomScripts()
             if (this.isYoutubeDeveloperConsoleEnabled) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
             this.setContentVisible(true)
+            this.applyStoredVolume()
         })
 
         this.youtubeWindow.on('close', (event) => {
@@ -118,6 +119,7 @@ export class YoutubeWindowService {
         if (shouldShow) {
             this.youtubeWindow.show()
             this.youtubeWindow.focus()
+            this.applyStoredVolume()
         }
     }
 
@@ -208,14 +210,11 @@ export class YoutubeWindowService {
         runScriptInView(this.youtubeView, videoModeScript).catch(() => {})
     }
 
-    startNowPlayingPolling({ onNowPlaying, onPresence }) {
+    startNowPlayingPolling({ onNowPlaying, onPresence, onVolumeChangedFromView }) {
         let lastPresenceSentAt = 0
 
         const poll = async () => {
             if (!this.youtubeView) return
-            try {
-                this.applyStoredVolume()
-            } catch {}
             let nowPlaying
             let watchUrl
             try {
@@ -234,10 +233,14 @@ export class YoutubeWindowService {
 
             try {
                 const volumeState = await getMediaVolume(this.youtubeView)
+                const prevVolume = this.lastVolume
+                const prevMuted = this.wasLastMuted
                 nowPlaying.volumeLevel = volumeState.volumeLevel
                 nowPlaying.isMuted = volumeState.isMuted
                 this.lastVolume = typeof volumeState.volumeLevel === 'number' ? volumeState.volumeLevel : this.lastVolume
                 this.wasLastMuted = typeof volumeState.isMuted === 'boolean' ? volumeState.isMuted : this.wasLastMuted
+                const changed = prevVolume !== this.lastVolume || prevMuted !== this.wasLastMuted
+                if (changed && typeof onVolumeChangedFromView === 'function') onVolumeChangedFromView()
             } catch {}
 
             if (typeof onPresence === 'function') {
@@ -268,15 +271,15 @@ export class YoutubeWindowService {
     }
 
     async setVolume(fraction) {
-        if (!this.youtubeView) return
         this.lastVolume = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 1
         this.wasLastMuted = false
+        if (!this.youtubeView) return
         await setMediaVolume(this.youtubeView, fraction)
     }
 
     async setMuted(isMuted) {
-        if (!this.youtubeView) return
         this.wasLastMuted = Boolean(isMuted)
+        if (!this.youtubeView) return
         await setMediaMuted(this.youtubeView, isMuted)
     }
 

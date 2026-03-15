@@ -13,7 +13,7 @@ import * as DiscordService from './services/DiscordService.js'
 import { TrayService } from './services/TrayService.js'
 import { Path } from './constants/path.js'
 import { getIconPath } from './helpers/window-helpers.js'
-import { registerIpc } from './services/IpcService.js'
+import { registerIpc, persistYoutubeVolumeState } from './services/IpcService.js'
 
 export class Launcher {
     constructor({ app, BrowserWindow, BrowserView, ipcMain, session }) {
@@ -114,6 +114,7 @@ export class Launcher {
         this.youtubeWindowService.startNowPlayingPolling({
             onNowPlaying: nowPlaying => this.mainWindowService.sendNowPlaying(nowPlaying),
             onPresence: (nowPlaying, watchUrl) => DiscordService.sendPresenceToRpc(nowPlaying, watchUrl),
+            onVolumeChangedFromView: () => persistYoutubeVolumeState(this.youtubeWindowService),
         })
 
         registerIpc({

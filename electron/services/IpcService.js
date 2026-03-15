@@ -7,7 +7,7 @@ import * as LogBufferService from './LogBufferService.js'
 import { errorWithBuffer } from '../helpers/error-helper.js'
 import { ConfigService } from '../../src/services/ConfigService.js'
 
-function persistYoutubeVolumeState(youtubeWindowService) {
+export function persistYoutubeVolumeState(youtubeWindowService) {
     try {
         const settings = ConfigService.loadSettings()
         if (!settings.youtubeMusic) settings.youtubeMusic = {}
