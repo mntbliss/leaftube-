@@ -37,6 +37,28 @@
   <img src="docs/images/banner_low.png" alt="" width="440" />
 </p>
 
+<h2 align="center">✧˚ ༘ ⋆｡♡˚ To-Do List ˚♡｡⋆ ༘˚✧</h2>
+
+<div align="left">
+
+- [ ] 🌸 perhaps re-made it completely in Vue3  
+- [ ] 🩷 add to mini bar like on the poster (tap)  
+- [ ] ✨ customisations for user to be cleaner/easier  
+- [ ] 🎧 fix bug with volume (not saved after track ends, gets from YT legacy instead of having shared one)  
+- [ ] 🐛 add in UI how many seconds past listened (colored progress)  
+- [ ] 🐛 cannot sign in while playing song (settings does not apply to (rights))  
+- [ ] 🎨 themes / customization  
+- [ ] 📱 streaming support (small poster and buttons to be pinned on the window)  
+- [ ] 🪟 save on which screen was used / drag  
+
+</div>
+
+<br/><br/>
+
+<p align="center">
+  <img src="docs/images/3.gif" alt="" width="440" />
+</p>
+
 <p align="center">
   <sub>♡ made with tea and sugarcubes ♡</sub>
 </p>
