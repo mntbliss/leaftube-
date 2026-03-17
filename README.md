@@ -47,6 +47,8 @@
 - [ ] 🎧 fix bug with volume (not saved after track ends, gets from YT legacy instead of having shared one)  
 - [ ] 🐛 add in UI how many seconds past listened (colored progress)  
 - [ ] 🐛 cannot sign in while playing song (settings does not apply to (rights))  
+- [ ] 🐛 bring back open music by clicking on thumbnail
+- [ ] 🎨 better playlist (only thumbnails with small text, not vice-versa) 
 - [ ] 🎨 themes / customization  
 - [ ] 📱 streaming support (small poster and buttons to be pinned on the window)  
 - [ ] 🪟 save on which screen was used / drag  
