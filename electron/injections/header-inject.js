@@ -11,11 +11,11 @@
         '#leaf-header-host { position: fixed; top: 0; left: 0; right: 0; height: var(--leaf-header-height); z-index: 10000; pointer-events: none; }',
         '#leaf-header-host > * { pointer-events: auto; }',
         '#leaf-drag { width: var(--leaf-header-drag-width); height: var(--leaf-header-height); -webkit-app-region: drag; }',
-        '#leaf-left-nav { position: absolute; top: 0; left: 0; height: var(--leaf-header-height); display: flex; align-items: center; gap: 8px; padding-left: 8px; -webkit-app-region: no-drag; }',
-        '#leaf-left-nav button { width: 32px; height: 28px; border: none; border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }',
+        '#leaf-left-nav { position: absolute; top: 0; left: 0; height: var(--leaf-header-height); display: flex; align-items: center; gap: 10px; padding-left: 10px; -webkit-app-region: no-drag; }',
+        '#leaf-left-nav button { min-width: 40px; height: 30px; padding: 0 10px; border: none; border-radius: 999px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }',
         '#leaf-left-nav button img { width: 20px; height: 20px; }',
-        '#leaf-header-buttons { position: absolute; top: 0; right: 0; width: var(--leaf-header-buttons-width); height: var(--leaf-header-height); display: flex; align-items: center; justify-content: center; gap: 4px; -webkit-app-region: no-drag; }',
-        '#leaf-header-buttons button { width: 32px; height: 28px; border: none; border-radius: 6px; background-color: rgba(30,35,40,0.9); cursor: pointer; font-size: 0; background-repeat: no-repeat; background-position: center; background-size: 18px 18px; }',
+        '#leaf-header-buttons { position: absolute; top: 0; right: 20px; width: var(--leaf-header-buttons-width); height: var(--leaf-header-height); display: flex; align-items: center; justify-content: center; gap: 10px; -webkit-app-region: no-drag; }',
+        '#leaf-header-buttons button { min-width: 40px; height: 30px; padding: 0 10px; border: none; border-radius: 999px; background-color: rgba(30,35,40,0.9); cursor: pointer; font-size: 0; background-repeat: no-repeat; background-position: center; background-size: 18px 18px; }',
         '#leaf-header-buttons button:hover { background-color: rgba(50,58,68,0.95); }',
     ].join(' ')
     document.head.appendChild(overlayStyleElement)
