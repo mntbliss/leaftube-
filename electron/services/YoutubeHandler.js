@@ -208,3 +208,65 @@ export async function getMediaVolume(youtubeView) {
   `
     return runScriptInViewReturn(youtubeView, script, { volumeLevel: 0, isMuted: false })
 }
+
+export async function clickLikeButton(youtubeView) {
+    if (!isValidView(youtubeView)) return
+    const script = `
+    (() => {
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      if (!playerBar) return
+      const root = playerBar.shadowRoot || playerBar
+      const likeShape = root.querySelector('#button-shape-like')
+      const dislikeShape = root.querySelector('#button-shape-dislike')
+      const targetShape = likeShape || dislikeShape
+      if (!targetShape) return
+      const shapeRoot = targetShape.shadowRoot || targetShape
+      const btn = shapeRoot.querySelector('button') || targetShape.querySelector('button')
+      if (!btn) return
+      btn.click()
+    })()
+  `
+    await runScriptInView(youtubeView, script)
+}
+
+export async function clickAddToPlaylist(youtubeView) {
+    if (!isValidView(youtubeView)) return
+    const script = `
+    (() => {
+      const playerBar = document.querySelector('ytmusic-player-bar')
+      if (!playerBar) return
+
+      const openMenu = () => {
+        const menuButton =
+          playerBar.querySelector('ytmusic-menu-renderer tp-yt-icon-button button') ||
+          playerBar.querySelector('button[aria-label*="More actions"]') ||
+          playerBar.querySelector('button[aria-label*="more options"]')
+        if (menuButton) {
+          menuButton.click()
+          return true
+        }
+        return false
+      }
+
+      const clickAddItem = () => {
+        const popup = document.querySelector('ytmusic-menu-popup-renderer')
+        if (!popup) return false
+        const items = Array.from(
+          popup.querySelectorAll('ytmusic-menu-navigation-item-renderer, ytmusic-menu-service-item-renderer, tp-yt-paper-item')
+        )
+        for (const item of items) {
+          const label = (item.getAttribute('aria-label') || item.textContent || '').toLowerCase()
+          if (label.includes('add to playlist') || label.includes('add to liked') || label.includes('library')) {
+            item.click()
+            return true
+          }
+        }
+        return false
+      }
+
+      if (!openMenu()) return
+      setTimeout(clickAddItem, 250)
+    })()
+  `
+    await runScriptInView(youtubeView, script)
+}

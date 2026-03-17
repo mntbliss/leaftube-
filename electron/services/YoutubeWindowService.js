@@ -5,7 +5,17 @@ import { PlayerAction } from '../constants/player-actions.js'
 import { runScriptInView } from '../helpers/view-helpers.js'
 import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 import { showSmooth, hideSmooth } from '../helpers/youtube-smooth-helpers.js'
-import { readNowPlaying, clickPlayerButton, clickPreviousSmart, seekPlayerToFraction, setMediaVolume, setMediaMuted, getMediaVolume } from './YoutubeHandler.js'
+import {
+    readNowPlaying,
+    clickPlayerButton,
+    clickPreviousSmart,
+    seekPlayerToFraction,
+    setMediaVolume,
+    setMediaMuted,
+    getMediaVolume,
+    clickLikeButton,
+    clickAddToPlaylist,
+} from './YoutubeHandler.js'
 
 export class YoutubeWindowService {
     constructor({ app, BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
@@ -29,6 +39,9 @@ export class YoutubeWindowService {
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
         this.lastVolume = Number.isFinite(volumeLevel) ? Math.max(0, Math.min(1, volumeLevel)) : 0
         this.wasLastMuted = Boolean(isMuted)
+        this.lastTrackKey = null
+        this.lastTrackChangeTime = 0
+        this.VOLUME_SYNC_GRACE_MS = 2500
     }
 
     ensureWindow(shouldShow = true) {
@@ -228,15 +241,30 @@ export class YoutubeWindowService {
             if (videoId) nowPlaying.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
 
             try {
+                const currentTrackKey = nowPlaying && nowPlaying.title ? `${nowPlaying.title}::${nowPlaying.channel || ''}` : null
+                if (currentTrackKey && currentTrackKey !== this.lastTrackKey) {
+                    this.lastTrackKey = currentTrackKey
+                    this.lastTrackChangeTime = Date.now()
+                    this.applyStoredVolume()
+                }
+            } catch {}
+
+            try {
                 const volumeState = await getMediaVolume(this.youtubeView)
-                const prevVolume = this.lastVolume
-                const prevMuted = this.wasLastMuted
-                nowPlaying.volumeLevel = volumeState.volumeLevel
-                nowPlaying.isMuted = volumeState.isMuted
-                this.lastVolume = typeof volumeState.volumeLevel === 'number' ? volumeState.volumeLevel : this.lastVolume
-                this.wasLastMuted = typeof volumeState.isMuted === 'boolean' ? volumeState.isMuted : this.wasLastMuted
-                const changed = prevVolume !== this.lastVolume || prevMuted !== this.wasLastMuted
-                if (changed && typeof onVolumeChangedFromView === 'function') onVolumeChangedFromView()
+                const inGraceWindow = Date.now() - this.lastTrackChangeTime < this.VOLUME_SYNC_GRACE_MS
+                if (!inGraceWindow) {
+                    const ytLevel = typeof volumeState.volumeLevel === 'number' ? volumeState.volumeLevel : this.lastVolume
+                    const ytMuted = typeof volumeState.isMuted === 'boolean' ? volumeState.isMuted : this.wasLastMuted
+                    if (this.lastVolume !== ytLevel || this.wasLastMuted !== ytMuted) {
+                        this.lastVolume = Math.max(0, Math.min(1, ytLevel))
+                        this.wasLastMuted = ytMuted
+                        if (typeof onVolumeChangedFromView === 'function') onVolumeChangedFromView()
+                    }
+                } else {
+                    this.applyStoredVolume()
+                }
+                nowPlaying.volumeLevel = this.lastVolume
+                nowPlaying.isMuted = this.wasLastMuted
             } catch {}
 
             if (typeof onPresence === 'function') {
@@ -288,6 +316,16 @@ export class YoutubeWindowService {
     async getVolume() {
         if (!this.youtubeView) return { volumeLevel: 1, isMuted: false }
         return getMediaVolume(this.youtubeView)
+    }
+
+    async likeCurrentTrack() {
+        if (!this.youtubeView) return
+        await clickLikeButton(this.youtubeView)
+    }
+
+    async addCurrentTrackToPlaylist() {
+        if (!this.youtubeView) return
+        await clickAddToPlaylist(this.youtubeView)
     }
 
     navigateTo(path) {

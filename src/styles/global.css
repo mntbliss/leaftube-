@@ -321,10 +321,23 @@ input[type='checkbox']:checked::before {
     height: 115px;
     border-radius: 22px;
     margin-bottom: 5px;
+    border: none;
+    padding: 0;
     background: linear-gradient(135deg, #73f373e6, rgb(250, 193, 119));
     background-size: cover;
     background-position: center;
     background-image: url('/default_cover.jpg');
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    transition: transform 120ms ease-out, filter var(--transition-outline-filter) ease;
+}
+
+.cover-icon:hover {
+    filter: drop-shadow(0 0 var(--outline-shadow-range) var(--leaf-accent));
+}
+
+.cover-icon:active {
+    transform: translateY(1px) scale(0.98);
 }
 
 .player-body {
@@ -542,6 +555,27 @@ input[type='checkbox']:checked::before {
     height: 100%;
     background: linear-gradient(90deg, #4affe1e6, #77eea5e6, #46ce41e6);
     transition: width 420ms linear;
+}
+
+.progress-time-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0 2px;
+}
+
+.progress-time {
+    white-space: nowrap;
+}
+
+.progress-time--current {
+    opacity: 0.9;
+}
+
+.progress-time--duration {
+    opacity: 0.7;
 }
 
 /* ----- settings ----- */

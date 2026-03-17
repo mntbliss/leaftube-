@@ -32,3 +32,11 @@ export function getVolume() {
     const result = invokePlayer('getVolume')
     return result != null ? result : Promise.resolve({ volumeLevel: 1, isMuted: false })
 }
+
+export function likeCurrentTrack() {
+    return invokePlayer('likeCurrentTrack')
+}
+
+export function addCurrentTrackToPlaylist() {
+    return invokePlayer('addCurrentTrackToPlaylist')
+}

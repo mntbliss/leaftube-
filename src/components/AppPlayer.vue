@@ -1,6 +1,6 @@
 <script setup>
     import { computed, ref, watch } from 'vue'
-    import { playPause, next, previous } from '../services/YoutubeService.js'
+    import { playPause, next, previous, likeCurrentTrack, addCurrentTrackToPlaylist } from '../services/YoutubeService.js'
     import { useVolumeControls } from '../composables/useVolumeControls.js'
     import { useProgressTrack } from '../composables/useProgressTrack.js'
     import { trimText } from '../helpers/text-helpers.js'
@@ -49,12 +49,43 @@
         if (typeof props.nowPlaying.isPaused === 'boolean') return props.nowPlaying.isPaused === false
         return props.nowPlaying.progressPercent > 0
     })
+
+    function formatTime(seconds) {
+        const totalSeconds = typeof seconds === 'number' && seconds > 0 ? Math.floor(seconds) : 0
+        const mins = Math.floor(totalSeconds / 60)
+        const secs = totalSeconds % 60
+        const paddedSecs = secs < 10 ? `0${secs}` : String(secs)
+        return `${mins}:${paddedSecs}`
+    }
+
+    const positionText = computed(() => formatTime(props.nowPlaying?.positionSeconds))
+    const durationText = computed(() => formatTime(props.nowPlaying?.durationSeconds))
+
+    let pendingLikeTimeoutId = null
+
+    function handleCoverClick(clickEvent) {
+        if (clickEvent) {
+            clickEvent.preventDefault()
+            clickEvent.stopPropagation()
+        }
+        if (!props.nowPlaying || !props.nowPlaying.title) return
+        if (pendingLikeTimeoutId != null) {
+            window.clearTimeout(pendingLikeTimeoutId)
+            pendingLikeTimeoutId = null
+            addCurrentTrackToPlaylist()
+            return
+        }
+        pendingLikeTimeoutId = window.setTimeout(() => {
+            pendingLikeTimeoutId = null
+            likeCurrentTrack()
+        }, 280)
+    }
 </script>
 
 <template>
     <div class="player-shell">
         <div class="player-main">
-            <div class="cover-icon" :style="coverStyle" />
+            <button class="cover-icon" type="button" :style="coverStyle" @click="handleCoverClick" aria-label="Like or add to playlist" />
             <div class="player-body">
                 <div class="track-meta">
                     <div class="track-title" v-text="titleText || 'leaftube 🍃'" />
@@ -99,6 +130,10 @@
         <div class="progress-row">
             <div ref="progressTrackRef" class="progress-track" @click="handleProgressTrackClick" @mousedown="handleProgressTrackDown">
                 <div class="progress-filled" :style="{ width: progressWidth }" />
+            </div>
+            <div class="progress-time-row" v-if="nowPlaying">
+                <span class="progress-time progress-time--current">{{ positionText }}</span>
+                <span class="progress-time progress-time--duration">{{ durationText }}</span>
             </div>
         </div>
     </div>

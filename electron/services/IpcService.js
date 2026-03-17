@@ -160,6 +160,11 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
         return safePlayerInvoke(() => youtubeWindowService.seekToFraction(fraction))
     })
 
+    ipcMain.handle(IpcChannel.PLAYER_LIKE_CURRENT, async () => {
+        ensureYoutubeReady()
+        return safePlayerInvoke(() => youtubeWindowService.likeCurrentTrack())
+    })
+
     ipcMain.handle(IpcChannel.PLAYER_SET_VOLUME, async (_event, fraction) => {
         ensureYoutubeReady()
         return safePlayerInvoke(async () => {
@@ -184,6 +189,11 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
             errorWithBuffer('[IpcService] player getVolume failed', error)
             return 0
         }
+    })
+
+    ipcMain.handle(IpcChannel.PLAYER_ADD_TO_PLAYLIST, async () => {
+        ensureYoutubeReady()
+        return safePlayerInvoke(() => youtubeWindowService.addCurrentTrackToPlaylist())
     })
 }
 
