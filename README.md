@@ -42,13 +42,14 @@
 <div align="left">
 
 - [ ] 🌸 perhaps re-made it completely in Vue3  
-- [ ] 🩷 add to mini bar like on the poster (tap)  
+- [ ] 🩷 add to mini bar `like` on the poster (tap)  
 - [ ] ✨ customisations for user to be cleaner/easier  
-- [ ] 🎧 fix bug with volume (not saved after track ends, gets from YT legacy instead of having shared one)  
-- [ ] 🐛 add in UI how many seconds past listened (colored progress)  
-- [ ] 🐛 cannot sign in while playing song (settings does not apply to (rights))  
-- [ ] 🐛 bring back open music by clicking on thumbnail
-- [ ] 🎨 better playlist (only thumbnails with small text, not vice-versa) 
+- [ ] 🎧 fix `bug` with `volume` (not saved after track ends, gets from YT legacy instead of having shared one)  
+- [ ] 🐛 add in UI how many seconds past listened (`colored progress`)  
+- [ ] 🐛 cannot `sign in` while playing song (settings does not apply to (rights))  
+- [ ] 🐛 bring back open music by `clicking on thumbnail`
+- [ ] 🎨 `better playlist` (only thumbnails with small text, not vice-versa) 
+- [ ] 🎨 custom protocol `leaf://` so users can link track directly
 - [ ] 🎨 themes / customization  
 - [ ] 📱 streaming support (small poster and buttons to be pinned on the window)  
 - [ ] 🪟 save on which screen was used / drag  
