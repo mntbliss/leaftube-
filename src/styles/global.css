@@ -340,6 +340,38 @@ input[type='checkbox']:checked::before {
     transform: translateY(1px) scale(0.98);
 }
 
+.cover-wrap {
+    position: relative;
+    flex: 0 0 115px;
+    height: 115px;
+    margin-bottom: 5px;
+}
+
+.cover-wrap .cover-icon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0;
+}
+
+.cover-pop {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.cover-pop-icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    animation: cover-pop 600ms ease-out forwards;
+}
+
 .player-body {
     flex: 1;
     display: flex;
@@ -757,5 +789,22 @@ input[type='checkbox']:checked::before {
 
     100% {
         transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cover-pop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2);
+        opacity: 0;
     }
 }

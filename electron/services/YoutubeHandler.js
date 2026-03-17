@@ -1,4 +1,5 @@
 import { isValidView, runScriptInView, runScriptInViewReturn } from '../helpers/view-helpers.js'
+import { LikeFeedbackAction } from '../../src/constants/like-feedback.js'
 
 export async function clickPlayerButton(youtubeView, action) {
     const script = `
@@ -210,23 +211,41 @@ export async function getMediaVolume(youtubeView) {
 }
 
 export async function clickLikeButton(youtubeView) {
-    if (!isValidView(youtubeView)) return
+    if (!isValidView(youtubeView)) return null
     const script = `
     (() => {
       const playerBar = document.querySelector('ytmusic-player-bar')
-      if (!playerBar) return
-      const root = playerBar.shadowRoot || playerBar
-      const likeShape = root.querySelector('#button-shape-like')
-      const dislikeShape = root.querySelector('#button-shape-dislike')
+      if (!playerBar) return null
+      const playerBarRoot = playerBar.shadowRoot || playerBar
+      const likeShape = playerBarRoot.querySelector('#button-shape-like')
+      const dislikeShape = playerBarRoot.querySelector('#button-shape-dislike')
       const targetShape = likeShape || dislikeShape
-      if (!targetShape) return
+      if (!targetShape) return null
+
+      // Determine current like state from the like button before clicking
+      const likeButtonRoot = likeShape ? (likeShape.shadowRoot || likeShape) : null
+      const likeButtonElement = likeButtonRoot
+        ? (likeButtonRoot.querySelector('button') || likeShape.querySelector('button'))
+        : null
+      const isCurrentlyLiked =
+        !!(
+          likeButtonElement &&
+          (likeButtonElement.getAttribute('aria-pressed') === 'true' ||
+            likeButtonElement.getAttribute('aria-checked') === 'true')
+        )
+
       const shapeRoot = targetShape.shadowRoot || targetShape
-      const btn = shapeRoot.querySelector('button') || targetShape.querySelector('button')
-      if (!btn) return
-      btn.click()
+      const likeDislikeButton = shapeRoot.querySelector('button') || targetShape.querySelector('button')
+      if (!likeDislikeButton) return null
+
+      likeDislikeButton.click()
+
+      // Report the action that just happened: like -> LIKE, liked -> DISLIKE
+      const action = isCurrentlyLiked ? '${LikeFeedbackAction.DISLIKE}' : '${LikeFeedbackAction.LIKE}'
+      return action
     })()
   `
-    await runScriptInView(youtubeView, script)
+    return runScriptInViewReturn(youtubeView, script, null)
 }
 
 export async function clickAddToPlaylist(youtubeView) {

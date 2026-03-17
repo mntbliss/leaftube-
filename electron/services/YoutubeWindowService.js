@@ -156,13 +156,13 @@ export class YoutubeWindowService {
 
     setContentAreaOpacity(opacityValue) {
         if (!this.youtubeView) return
-        const value = Number(opacityValue)
-        if (!Number.isFinite(value)) return
-        const clamped = Math.max(0, Math.min(1, value))
+        const numericOpacity = Number(opacityValue)
+        if (!Number.isFinite(numericOpacity)) return
+        const clamped = Math.max(0, Math.min(1, numericOpacity))
         const script = `(function(){ try {
           var contentRoot = document.body && document.body.firstElementChild;
           if (contentRoot) { contentRoot.style.transition = 'opacity 200ms ease-out'; contentRoot.style.opacity = ${clamped}; }
-        } catch(ignore) {} })();`
+        } catch (error) {} })();`
         runScriptInView(this.youtubeView, script).catch(() => {})
     }
 
@@ -319,8 +319,8 @@ export class YoutubeWindowService {
     }
 
     async likeCurrentTrack() {
-        if (!this.youtubeView) return
-        await clickLikeButton(this.youtubeView)
+        if (!this.youtubeView) return null
+        return clickLikeButton(this.youtubeView)
     }
 
     async addCurrentTrackToPlaylist() {

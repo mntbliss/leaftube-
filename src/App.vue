@@ -49,10 +49,10 @@
     }
 
     async function toggleDiscord() {
-        const next = !discordEnabled.value
-        LoggerService.log('[Discord] toggle clicked, requested enabled:', next)
+        const requestedDiscordEnabled = !discordEnabled.value
+        LoggerService.log('[Discord] toggle clicked, requested enabled:', requestedDiscordEnabled)
         try {
-            const result = await window.desktopBridge.discord.setEnabled(next)
+            const result = await window.desktopBridge.discord.setEnabled(requestedDiscordEnabled)
             discordEnabled.value = result.discordEnabled
             LoggerService.log('[Discord] result:', result)
         } catch (error) {

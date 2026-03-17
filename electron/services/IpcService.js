@@ -132,8 +132,7 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
 
     async function safePlayerInvoke(awaitedFunction) {
         try {
-            await awaitedFunction()
-            return {}
+            return await awaitedFunction()
         } catch (error) {
             errorWithBuffer('[IpcService] player action failed', error)
             return {}

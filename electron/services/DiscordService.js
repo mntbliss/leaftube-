@@ -37,14 +37,14 @@ function startRpcClient() {
         LoggerService.log('[DiscordService] RPC ready')
     })
 
-    rpcClient.on('error', (err) => {
-        errorWithBuffer('[DiscordService] RPC error', err?.message ?? err)
+    rpcClient.on('error', (error) => {
+        errorWithBuffer('[DiscordService] RPC error', error?.message ?? error)
         rpcClient = undefined
         rpcReady = false
     })
 
-    rpcClient.login({ clientId }).catch((err) => {
-        errorWithBuffer('[DiscordService] RPC login failed', err?.message ?? err)
+    rpcClient.login({ clientId }).catch((error) => {
+        errorWithBuffer('[DiscordService] RPC login failed', error?.message ?? error)
         rpcClient = undefined
         rpcReady = false
     })

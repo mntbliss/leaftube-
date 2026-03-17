@@ -2,6 +2,7 @@
     import { computed, ref, watch } from 'vue'
     import { playPause, next, previous, likeCurrentTrack, addCurrentTrackToPlaylist } from '../services/YoutubeService.js'
     import { useVolumeControls } from '../composables/useVolumeControls.js'
+    import { LikeFeedbackAction } from '../constants/like-feedback.js'
     import { useProgressTrack } from '../composables/useProgressTrack.js'
     import { trimText } from '../helpers/text-helpers.js'
 
@@ -62,6 +63,16 @@
     const durationText = computed(() => formatTime(props.nowPlaying?.durationSeconds))
 
     let pendingLikeTimeoutId = null
+    const posterPopIcon = ref(null)
+    const POSTER_POP_DURATION_MS = 600
+
+    function showPosterPop(action) {
+        if (action !== LikeFeedbackAction.LIKE && action !== LikeFeedbackAction.DISLIKE) return
+        posterPopIcon.value = action
+        setTimeout(() => {
+            posterPopIcon.value = null
+        }, POSTER_POP_DURATION_MS + 50)
+    }
 
     function handleCoverClick(clickEvent) {
         if (clickEvent) {
@@ -77,7 +88,10 @@
         }
         pendingLikeTimeoutId = window.setTimeout(() => {
             pendingLikeTimeoutId = null
-            likeCurrentTrack()
+            const promise = likeCurrentTrack()
+            if (promise && typeof promise.then === 'function') {
+                promise.then(showPosterPop)
+            }
         }, 280)
     }
 </script>
@@ -85,7 +99,12 @@
 <template>
     <div class="player-shell">
         <div class="player-main">
-            <button class="cover-icon" type="button" :style="coverStyle" @click="handleCoverClick" aria-label="Like or add to playlist" />
+            <div class="cover-wrap">
+                <button class="cover-icon" type="button" :style="coverStyle" @click="handleCoverClick" aria-label="Like or add to playlist" />
+                <div v-if="posterPopIcon" class="cover-pop" aria-hidden="true">
+                    <img class="cover-pop-icon" :src="`./icons/${posterPopIcon}.png`" :alt="posterPopIcon" />
+                </div>
+            </div>
             <div class="player-body">
                 <div class="track-meta">
                     <div class="track-title" v-text="titleText || 'leaftube 🍃'" />

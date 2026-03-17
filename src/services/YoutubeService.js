@@ -1,7 +1,7 @@
 function invokePlayer(method, ...args) {
-    const fn = window.desktopBridge?.player?.[method]
-    if (typeof fn !== 'function') return undefined
-    return fn.apply(window.desktopBridge.player, args)
+    const playerMethod = window.desktopBridge?.player?.[method]
+    if (typeof playerMethod !== 'function') return undefined
+    return playerMethod.apply(window.desktopBridge.player, args)
 }
 
 export function playPause() {
