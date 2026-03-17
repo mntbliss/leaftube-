@@ -47,6 +47,7 @@
 - [ ] 🎧 fix `bug` with `volume` (not saved after track ends, gets from YT legacy instead of having shared one)  
 - [ ] 🐛 add in UI how many seconds past listened (`colored progress`)  
 - [ ] 🐛 cannot `sign in` while playing song (settings does not apply to (rights))  
+- [ ] 🐛 while `signed in` some parts of the header are not displaying  
 - [ ] 🐛 bring back open music by `clicking on thumbnail`
 - [ ] 🎨 `better playlist` (only thumbnails with small text, not vice-versa) 
 - [ ] 🎨 custom protocol `leaf://` so users can link track directly
