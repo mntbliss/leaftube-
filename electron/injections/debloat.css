@@ -1,12 +1,15 @@
 :root {
     --leaf-background: rgba(20, 20, 20, 0.9);
-    /* scroll: small, green thumb on almost fully black track (injected for YouTube) */
     --leaf-scroll-track: rgba(17, 17, 17, 0.562);
     --leaf-scroll-thumb: #50a05c;
+    --leaf-accent-background: #406446;
     --leaf-scroll-size: 4px;
     --ytmusic-guide-width: 50px !important;
     --ytmusic-base-page-padding-bottom: 5px !important;
-    --ytmusic-nav-bar-height: 48px !important;
+    --ytmusic-nav-bar-height: 0px !important;
+    --leaf-header-height: 50px;
+    --leaf-header-drag-width: 0px;
+    --leaf-header-buttons-width: 80px;
 }
 
 /* safe nets for yt clingy behaviour */
@@ -17,6 +20,21 @@
 /* safe nets for yt clingy behaviour */
 ytmusic-app-layout > #content {
     padding-bottom: 0px !important;
+}
+
+.search-box.ytmusic-search-box {
+    border-radius: 9999px !important;
+    height: 28px !important;
+    background: var(--leaf-background) !important;
+}
+
+.right-content.ytmusic-nav-bar {
+    right: 200px !important;
+}
+
+.sign-in-link {
+    height: 28px !important;
+    background-color: var(--leaf-accent-background) !important;
 }
 
 /* safe nets for yt clingy behaviour */
@@ -103,17 +121,13 @@ ytmusic-app-layout {
     --ytmusic-guide-width: 48px !important;
 }
 
-/* mini-guide: visible, collapsed by default; expanded = 48x48 icon-only boxes */
+/* mini-guide (left cringe navbar) */
 #guide,
 mini-guide,
 #mini-guide,
 #mini-guide-renderer,
 mini-guide-background {
-    display: block !important;
-}
-
-ytmusic-guide-renderer {
-    width: 48px !important;
+    display: none !important;
 }
 
 /* expanded state: click opens wider strip with 48x48 icon boxes */
@@ -173,10 +187,6 @@ ytmusic-pivot-bar-renderer,
     display: none !important;
 }
 
-ytmusic-nav-bar {
-    padding-top: 20px !important;
-}
-
 /* strip gradients, borders, and shadows from all YT Music content */
 ytmusic-app,
 ytmusic-app * {
@@ -200,7 +210,7 @@ ytmusic-browse-response,
     border: none !important;
 }
 
-/* gentle solid strip for search/header so it's still usable */
+/* solid strip for search/header so its usable */
 ytmusic-nav-bar {
     background: transparent !important;
     border-bottom: none !important;
@@ -225,7 +235,7 @@ ytmusic-guide-entry-renderer yt-formatted-string {
     display: none !important;
 }
 
-/* left nav: fixed narrow width with centered icons */
+/* left nav: fixed width with centered icons */
 ytmusic-guide-renderer {
     width: 80px !important;
 }

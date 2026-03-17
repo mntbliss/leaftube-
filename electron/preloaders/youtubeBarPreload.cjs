@@ -8,7 +8,6 @@ const IpcChannel = {
     UI_OPEN_SETTINGS: 'ui:open-settings',
     UI_YOUTUBE_NAVIGATE: 'ui:youtube-navigate',
     UI_YOUTUBE_SEARCH: 'ui:youtube-search',
-    UI_YOUTUBE_OPEN_SIGN_IN: 'ui:youtube-open-sign-in',
     UI_YOUTUBE_OPEN_APP_MENU: 'ui:youtube-open-app-menu',
 }
 
@@ -33,9 +32,6 @@ contextBridge.exposeInMainWorld('leafYoutubeBar', {
     },
     runSearch(query) {
         ipcRenderer.invoke(IpcChannel.UI_YOUTUBE_SEARCH, query)
-    },
-    openSignIn() {
-        ipcRenderer.invoke(IpcChannel.UI_YOUTUBE_OPEN_SIGN_IN)
     },
     openAppMenu() {
         ipcRenderer.invoke(IpcChannel.UI_YOUTUBE_OPEN_APP_MENU)

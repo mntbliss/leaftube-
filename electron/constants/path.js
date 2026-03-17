@@ -3,6 +3,7 @@ export const Path = {
     BUILD_DIR: 'build',
     ICON_FILENAME: 'icon.ico',
     ELECTRON_DIR: 'electron',
+    INJECTIONS_DIR: 'injections',
     PRELOADERS_DIR: 'preloaders',
     DIST_DIR: 'dist',
     PRELOAD_FILENAME: 'preload.cjs',

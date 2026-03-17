@@ -37,10 +37,10 @@ export class Launcher {
         this.youtubeDebloatCss = ''
 
         try {
-            const debloatPath = resolve(this.rootDirPath, 'configs', 'debloat.css')
+            const debloatPath = resolve(this.rootDirPath, 'electron', 'injections', 'debloat.css')
             this.youtubeDebloatCss = readFileSync(debloatPath, 'utf8')
         } catch {
-            LoggerService.log('[Launcher] debloat.css not found or unreadable, skipping YouTube debloat CSS')
+            LoggerService.log('[Launcher] electron/injections/debloat.css not found or unreadable, skipping YT debloat CSS')
         }
 
         this.mainWindowService = new MainWindowService({

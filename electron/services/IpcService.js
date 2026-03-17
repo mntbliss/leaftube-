@@ -118,12 +118,6 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return {}
     })
 
-    ipcMain.handle(IpcChannel.UI_YOUTUBE_OPEN_SIGN_IN, async () => {
-        console.log('[IpcService] UI_YOUTUBE_OPEN_SIGN_IN', { hasService: !!youtubeWindowService })
-        if (youtubeWindowService) youtubeWindowService.openSignInInView()
-        return {}
-    })
-
     ipcMain.handle(IpcChannel.UI_YOUTUBE_OPEN_APP_MENU, async () => {
         console.log('[IpcService] UI_YOUTUBE_OPEN_APP_MENU', { hasService: !!youtubeWindowService })
         if (youtubeWindowService) youtubeWindowService.openSettingsInView()

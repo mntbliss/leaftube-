@@ -1,0 +1,15 @@
+/* injected into YT Music page */
+
+body.leaf-has-header {
+    padding-top: var(--leaf-header-height) !important;
+}
+
+ytmusic-nav-bar {
+    position: fixed !important;
+    top: 0 !important;
+    left: var(--leaf-header-drag-width) !important;
+    right: var(--leaf-header-buttons-width) !important;
+    height: var(--leaf-header-height) !important;
+    background: var(--leaf-background) !important;
+    z-index: 9999 !important;
+}

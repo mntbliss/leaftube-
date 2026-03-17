@@ -13,7 +13,6 @@ export const IpcChannel = {
     UI_MINI_POP: 'ui:mini-pop',
     UI_YOUTUBE_NAVIGATE: 'ui:youtube-navigate',
     UI_YOUTUBE_SEARCH: 'ui:youtube-search',
-    UI_YOUTUBE_OPEN_SIGN_IN: 'ui:youtube-open-sign-in',
     UI_YOUTUBE_OPEN_APP_MENU: 'ui:youtube-open-app-menu',
     PLAYER_PLAY_PAUSE: 'player:play-pause',
     PLAYER_NEXT: 'player:next',

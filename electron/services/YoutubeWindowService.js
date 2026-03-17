@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Path } from '../constants/path.js'
 import { PlayerAction } from '../constants/player-actions.js'
@@ -21,8 +22,7 @@ export class YoutubeWindowService {
 
         this.youtubeWindow = undefined
         this.youtubeView = undefined
-        this.barView = undefined
-        this.barHeight = 45
+        this.headerHeight = 50
         this.isFirstYoutubeLoad = true
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
@@ -66,24 +66,13 @@ export class YoutubeWindowService {
         }
 
         const barPreloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.YOUTUBE_BAR_PRELOAD_FILENAME)
-        this.barView = new this.BrowserView({
-            webPreferences: getWebPreferences({ preloadPath: barPreloadPath }),
-        })
-        this.barView.webContents.setMaxListeners(50)
-
         this.youtubeView = new this.BrowserView({
-            webPreferences: getWebPreferences({ partition: Path.YOUTUBE_PARTITION }),
+            webPreferences: getWebPreferences({ partition: Path.YOUTUBE_PARTITION, preloadPath: barPreloadPath }),
         })
-
-        // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
-        // memory leak bad uh-uh
         this.youtubeView.webContents.setMaxListeners(50)
 
-        this.youtubeWindow.setBrowserView(this.barView)
-        this.youtubeWindow.addBrowserView(this.youtubeView)
+        this.youtubeWindow.setBrowserView(this.youtubeView)
         this.resizeView()
-
-        this.barView.webContents.loadFile(resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.YOUTUBE_BAR_HTML_FILENAME))
         this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url)
 
         if (isPreloading && restoredBounds) {
@@ -100,6 +89,7 @@ export class YoutubeWindowService {
 
         this.youtubeView.webContents.on('dom-ready', () => {
             this.injectDebloatCss()
+            this.injectHeaderIntoYoutubePage()
             this.injectYoutubeDomScripts()
             if (this.isYoutubeDeveloperConsoleEnabled) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
             this.applyStoredVolume()
@@ -117,7 +107,6 @@ export class YoutubeWindowService {
         this.youtubeWindow.on('closed', () => {
             this.youtubeWindow = undefined
             this.youtubeView = undefined
-            this.barView = undefined
             this.isFirstYoutubeLoad = true
         })
 
@@ -129,22 +118,13 @@ export class YoutubeWindowService {
     }
 
     resizeView() {
-        if (!this.youtubeWindow || !this.youtubeView || !this.barView) return
-
+        if (!this.youtubeWindow || !this.youtubeView) return
         const windowBounds = this.youtubeWindow.getBounds()
-
-        this.barView.setBounds({
+        this.youtubeView.setBounds({
             x: 0,
             y: 0,
             width: windowBounds.width,
-            height: this.barHeight,
-        })
-
-        this.youtubeView.setBounds({
-            x: 0,
-            y: this.barHeight,
-            width: windowBounds.width,
-            height: windowBounds.height - this.barHeight,
+            height: windowBounds.height,
         })
     }
 
@@ -198,27 +178,32 @@ export class YoutubeWindowService {
         this.youtubeView.webContents.insertCSS(this.youtubeDebloatCss)
     }
 
+    injectHeaderIntoYoutubePage() {
+        if (!this.youtubeView) return
+        const getInjectionFilePath = fileName => resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.INJECTIONS_DIR, fileName)
+        let headerCssContent = ''
+        let headerJsContent = ''
+        try {
+            headerCssContent = readFileSync(getInjectionFilePath('header-inject.css'), 'utf8')
+            headerJsContent = readFileSync(getInjectionFilePath('header-inject.js'), 'utf8')
+        } catch (readError) {
+            return
+        }
+        this.youtubeView.webContents.insertCSS(headerCssContent).catch(() => {})
+        runScriptInView(this.youtubeView, headerJsContent).catch(() => {})
+    }
+
     injectYoutubeDomScripts() {
         if (!this.youtubeView) return
-
         if (!this.isVideosInsteadOfPicture) return
-        const videoModeScript = `(function() {
-          setTimeout(function() {
-            try {
-              function switchToVideoTabIfNotActive() {
-                if (document.body.classList.contains('video-mode')) return;
-                var videoTabSelectors = ['ytmusic-player-page tp-yt-paper-tab[tab-id="VIDEO"]', 'ytmusic-player-page [role="tab"][tab-id="VIDEO"]'];
-                for (var selectorIndex = 0; selectorIndex < videoTabSelectors.length; selectorIndex++) {
-                  var videoTabElement = document.querySelector(videoTabSelectors[selectorIndex]);
-                  if (videoTabElement) { videoTabElement.click(); break; }
-                }
-              }
-              switchToVideoTabIfNotActive();
-              setInterval(switchToVideoTabIfNotActive, 3000);
-            } catch(error) {}
-          }, 0);
-        })()`
-        runScriptInView(this.youtubeView, videoModeScript).catch(() => {})
+        const getInjectionFilePath = fileName => resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.INJECTIONS_DIR, fileName)
+        let videoModeScriptContent = ''
+        try {
+            videoModeScriptContent = readFileSync(getInjectionFilePath('video-mode.js'), 'utf8')
+        } catch (readError) {
+            return
+        }
+        runScriptInView(this.youtubeView, videoModeScriptContent).catch(() => {})
     }
 
     startNowPlayingPolling({ onNowPlaying, onPresence, onVolumeChangedFromView }) {
@@ -324,17 +309,6 @@ export class YoutubeWindowService {
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
         const url = `${base}/search?q=${encodeURIComponent(searchQuery)}`
         this.youtubeView.webContents.loadURL(url).catch(() => {})
-    }
-
-    openSignInInView() {
-        if (!this.youtubeView) return
-        const script = `(function(){ try {
-          var signInLink = document.querySelector('a[href*="accounts.google.com"]') || document.querySelector('a[href*="ServiceLogin"]') || document.querySelector('.sign-in-link') || document.querySelector('[class*="sign-in"] a');
-          if (signInLink && signInLink.href) {
-            window.location.href = signInLink.href;
-          }
-        } catch(error) {} })()`
-        runScriptInView(this.youtubeView, script).catch(() => {})
     }
 
     openSettingsInView() {
