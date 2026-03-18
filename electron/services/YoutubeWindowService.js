@@ -68,6 +68,16 @@ export class YoutubeWindowService {
             webPreferences: getWebPreferences(),
         })
 
+        // Prevent the YouTube window itself from entering fullscreen
+        try {
+            this.youtubeWindow.setFullScreenable(false)
+        } catch {}
+        this.youtubeWindow.on('enter-full-screen', () => {
+            try {
+                this.youtubeWindow.setFullScreen(false)
+            } catch {}
+        })
+
         this.youtubeWindow.maximize()
 
         let restoredBounds = null
@@ -87,6 +97,21 @@ export class YoutubeWindowService {
             webPreferences: getWebPreferences({ partition: Path.YOUTUBE_PARTITION, preloadPath: barPreloadPath }),
         })
         this.youtubeView.webContents.setMaxListeners(50)
+
+        // Block HTML5 fullscreen inside the YT Music view
+        this.youtubeView.webContents.on('enter-html-full-screen', event => {
+            try {
+                if (event && typeof event.preventDefault === 'function') event.preventDefault()
+            } catch {}
+            try {
+                this.youtubeView.setFullScreen(false)
+            } catch {}
+        })
+        this.youtubeView.webContents.on('leave-html-full-screen', () => {
+            try {
+                this.youtubeView.setFullScreen(false)
+            } catch {}
+        })
 
         this.youtubeWindow.setBrowserView(this.youtubeView)
         this.resizeView()
