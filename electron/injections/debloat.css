@@ -27,6 +27,7 @@
     --ytmusic-player-page-horizontal-padding: 0px !important;
     --ytmusic-player-page-side-panel-width: 20% !important;
     --ytmusic-player-page-content-gap: 40px !important;
+    --ytmusic-player-queue-item-thumbnail-size: 80px !important;
 
     scrollbar-width: thin !important;
     scrollbar-arrow-color: var(--leaf-accent) !important;
@@ -62,10 +63,107 @@ ytmusic-carousel-shelf-renderer * :hover {
 }
 
 /* PLAYER STUFF */
+
+/* stuff regardin miniatures */
 .autoplay.style-scope.ytmusic-player-queue,
 ytmusic-tastebuilder-shelf-renderer,
-ytmusic-item-thumbnail-overlay-renderer {
+.icon.style-scope.ytmusic-play-button-renderer {
     display: none !important;
+}
+
+.left-items.ytmusic-player-queue-item,
+.style-scope.ytmusic-player-queue {
+    --ytmusic-player-queue-item-thumbnail-size: 100px !important;
+}
+
+/* Queue as full-width/thumb gallery */
+#contents.style-scope.ytmusic-player-queue {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 10px !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+}
+
+ytmusic-player-queue-item.style-scope.ytmusic-player-queue {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    padding: 4px !important;
+    box-sizing: border-box !important;
+}
+
+.left-items.ytmusic-player-queue-item {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    overflow: hidden !important;
+    border-radius: 6px !important;
+}
+
+ytmusic-menu-renderer.menu.style-scope.ytmusic-player-queue-item {
+    margin: 2px !important;
+    padding: 2px !important;
+}
+
+ytmusic-player-queue-item .thumbnail,
+ytmusic-player-queue-item yt-img-shadow,
+ytmusic-player-queue-item yt-img-shadow img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+}
+
+/* Hide text/info by default, show on hover over dark overlay */
+ytmusic-player-queue-item .song-info,
+ytmusic-player-queue-item .duration,
+ytmusic-player-queue-item .menu {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding: 8px !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent) !important;
+    opacity: 0 !important;
+    transform: translateY(6px);
+    transition: opacity 0.18s ease-out, transform 0.18s ease-out !important;
+    color: #fff !important;
+}
+
+ytmusic-player-queue-item .song-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+ytmusic-player-queue-item .song-title,
+ytmusic-player-queue-item .byline,
+ytmusic-player-queue-item .duration {
+    color: #fff !important;
+}
+
+ytmusic-player-queue-item:hover .song-info,
+ytmusic-player-queue-item:hover .duration,
+ytmusic-player-queue-item:hover .menu {
+    opacity: 1 !important;
+    transform: translateY(0);
+}
+
+/* Keep 3-dots menu in the corner inside overlay */
+ytmusic-player-queue-item .menu {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    pointer-events: none !important;
+}
+
+ytmusic-player-queue-item .menu button {
+    pointer-events: auto !important;
 }
 
 /* progress bar in legacy YT player */
