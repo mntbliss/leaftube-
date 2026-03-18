@@ -77,6 +77,7 @@ ytmusic-tastebuilder-shelf-renderer,
 }
 
 /* Queue as full-width/thumb gallery */
+#automix-contents.style-scope.ytmusic-player-queue,
 #contents.style-scope.ytmusic-player-queue {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
@@ -153,7 +154,7 @@ ytmusic-player-queue-item .song-info {
 }
 
 ytmusic-player-queue-item .menu {
-    z-index: 1 !important;
+    z-index: 888 !important;
     background: linear-gradient(
         to top,
         rgba(0, 0, 0, 0.96) 0%,
@@ -194,16 +195,33 @@ ytmusic-player-queue-item .menu {
 
 ytmusic-player-queue-item .menu button,
 /* .style-scope.ytmusic-item-thumbnail-overlay-renderer */
-#play-button.ytmusic-item-thumbnail-overlay-renderer {
+#play-button.ytmusic-item-thumbnail-overlay-renderer,
+.content-wrapper.style-scope.ytmusic-play-button-renderer
+#content.style-scope.ytmusic-item-thumbnail-overlay-renderer {
     width: 100% !important;
     height: 100% !important;
     overflow: visible !important;
     margin: 0px !important;
     padding: 0px !important;
-    width: 200px !important;
     z-index: 1000 !important;
     pointer-events: auto !important;
     cursor: pointer !important;
+}
+
+/* IMPORTANT FUCKING ELEMENT THAT FOR SOME REASON USUALLY IS 50x50 AND NEVER PROPERLY SCALED BUT RESPONSIBLE FOR CLICKS (i guess play button) */
+ytmusic-player-queue-item .left-items.style-scope.ytmusic-player-queue-item {
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: all !important;
+    z-index: 800 !important;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.96) 0%,
+        rgba(0, 0, 0, 0.9) 25%,
+        rgba(0, 0, 0, 0.7) 55%,
+        rgba(0, 0, 0, 0.4) 80%,
+        transparent 100%
+    ) !important;
 }
 
 ytmusic-player-queue-item .menu button {
