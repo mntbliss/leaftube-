@@ -40,3 +40,7 @@ export function likeCurrentTrack() {
 export function addCurrentTrackToPlaylist() {
     return invokePlayer('addCurrentTrackToPlaylist')
 }
+
+export function toggleLoop() {
+    return invokePlayer('toggleLoop')
+}

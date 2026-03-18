@@ -15,7 +15,10 @@ import {
     getMediaVolume,
     clickLikeButton,
     clickAddToPlaylist,
+    clickRepeatButton,
+    readRepeatModeFromPlayerBar,
 } from './YoutubeHandler.js'
+import { ordinalFromRepeatState, repeatStateFromOrdinal } from '../../src/constants/loop-feedback.js'
 
 export class YoutubeWindowService {
     constructor({ app, BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
@@ -42,6 +45,8 @@ export class YoutubeWindowService {
         this.lastTrackKey = null
         this.lastTrackChangeTime = 0
         this.VOLUME_SYNC_GRACE_MS = 2500
+        /** 0 = off, 1 = all, 2 = one — synced from DOM when possible */
+        this.repeatModeOrdinal = null
     }
 
     ensureWindow(shouldShow = true) {
@@ -267,6 +272,12 @@ export class YoutubeWindowService {
                 nowPlaying.isMuted = this.wasLastMuted
             } catch {}
 
+            try {
+                const repeatMode = await readRepeatModeFromPlayerBar(this.youtubeView)
+                const repeatOrdinal = ordinalFromRepeatState(repeatMode)
+                if (repeatOrdinal != null) this.repeatModeOrdinal = repeatOrdinal
+            } catch {}
+
             if (typeof onPresence === 'function') {
                 const now = Date.now()
                 const isTrackValid = nowPlaying && nowPlaying.title
@@ -326,6 +337,19 @@ export class YoutubeWindowService {
     async addCurrentTrackToPlaylist() {
         if (!this.youtubeView) return
         await clickAddToPlaylist(this.youtubeView)
+    }
+
+    async toggleLoop() {
+        if (!this.youtubeView) return null
+        const detected = await clickRepeatButton(this.youtubeView)
+        const detectedOrdinal = ordinalFromRepeatState(detected)
+        if (detected != null && detectedOrdinal != null) {
+            this.repeatModeOrdinal = detectedOrdinal
+            return detected
+        }
+        const previousOrdinal = this.repeatModeOrdinal != null ? this.repeatModeOrdinal : 0
+        this.repeatModeOrdinal = (previousOrdinal + 1) % 3
+        return repeatStateFromOrdinal(this.repeatModeOrdinal)
     }
 
     navigateTo(path) {
