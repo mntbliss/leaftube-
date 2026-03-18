@@ -2,9 +2,13 @@
 
 <sub>✧ common issues (´・ω・\`) ✿</sub>
 
----
+> [!CAUTION]
+> If you have any trouble opening **RELEASE** app:
+> - Delete previous versions (from windows apps, and then if left the packages locally)
+> - Restart your PC (Electron processes may still be running even if not visible)
 
-## ✦ app won’t start
+
+## ✦ app won’t start (from source code)
 
 -   Make sure **Node.js** and **npm** are installed: `node -v` and `npm -v`
 -   Run `npm install` in the project folder, then `npm run dev` again
