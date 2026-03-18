@@ -20,7 +20,12 @@
 
             // For googleusercontent thumbs with size parameters, strip the resizing
             if (url.hostname.indexOf('googleusercontent.com') !== -1) {
+                // Drop any explicit query params if present
                 url.search = ''
+                // And drop size modifiers embedded in the path after '='
+                if (url.pathname.indexOf('=') !== -1) {
+                    url.pathname = url.pathname.split('=')[0]
+                }
                 img.src = url.toString()
                 return
             }
