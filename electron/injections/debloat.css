@@ -139,7 +139,11 @@ ytmusic-player-queue-item .menu {
 ytmusic-player-queue-item .song-info {
     align-self: flex-end !important;
     font-size: 5px !important;
+    pointer-events: none !important;
+    cursor: pointer !important;
+    z-index: 900 !important;
 }
+
 .song-title.style-scope.ytmusic-player-queue-item {
     font-size: 15px !important;
 }
@@ -158,12 +162,14 @@ ytmusic-player-queue-item .menu {
         rgba(0, 0, 0, 0.4) 80%,
         transparent 100%
     ) !important;
+    pointer-events: none !important;
 }
 
 ytmusic-player-queue-item .song-info {
     display: flex !important;
     flex-direction: column !important;
     gap: 2px !important;
+    margin-bottom: -10px !important;
 }
 
 ytmusic-player-queue-item .song-title,
@@ -184,11 +190,25 @@ ytmusic-player-queue-item .menu {
     display: flex !important;
     justify-content: flex-end !important;
     align-items: flex-start !important;
-    pointer-events: none !important;
+}
+
+ytmusic-player-queue-item .menu button,
+/* .style-scope.ytmusic-item-thumbnail-overlay-renderer */
+#play-button.ytmusic-item-thumbnail-overlay-renderer {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    margin: 0px !important;
+    padding: 0px !important;
+    width: 200px !important;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 ytmusic-player-queue-item .menu button {
-    pointer-events: auto !important;
+    width: 40px !important;
+    z-index: 2000 !important;
 }
 
 /* Ensure background overlay sits below text/content */
