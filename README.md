@@ -41,13 +41,8 @@
 
 <div align="left">
 
-- [ ] 🌸 perhaps re-made it completely in Vue3  
-- [ ] ✨ customisations for user to be cleaner/easier  
 - [ ] 🐛 cannot `sign in` while playing song (settings does not apply to (rights))  
 - [ ] 🎨 custom protocol `leaf://` so users can link track directly
-- [ ] 🎨 themes / customization  
-- [ ] 📱 streaming support (small poster and buttons to be pinned on the window)  
-- [ ] 🪟 save on which screen was used / drag  
 
 </div>
 
