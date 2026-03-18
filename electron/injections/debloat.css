@@ -124,15 +124,40 @@ ytmusic-player-queue-item .song-info,
 ytmusic-player-queue-item .duration,
 ytmusic-player-queue-item .menu {
     position: absolute !important;
+    z-index: 2 !important;
     left: 0 !important;
     right: 0 !important;
+    top: 0 !important;
     bottom: 0 !important;
-    padding: 8px !important;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent) !important;
+    padding: 10px 10px 14px !important;
     opacity: 0 !important;
     transform: translateY(6px);
     transition: opacity 0.18s ease-out, transform 0.18s ease-out !important;
-    color: #fff !important;
+    color: var(--fill-color) !important;
+}
+
+ytmusic-player-queue-item .song-info {
+    align-self: flex-end !important;
+    font-size: 5px !important;
+}
+.song-title.style-scope.ytmusic-player-queue-item {
+    font-size: 15px !important;
+}
+
+.byline-wrapper.style-scope.ytmusic-player-queue-item {
+    font-size: 10px !important;
+}
+
+ytmusic-player-queue-item .menu {
+    z-index: 1 !important;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.96) 0%,
+        rgba(0, 0, 0, 0.9) 25%,
+        rgba(0, 0, 0, 0.7) 55%,
+        rgba(0, 0, 0, 0.4) 80%,
+        transparent 100%
+    ) !important;
 }
 
 ytmusic-player-queue-item .song-info {
@@ -144,7 +169,7 @@ ytmusic-player-queue-item .song-info {
 ytmusic-player-queue-item .song-title,
 ytmusic-player-queue-item .byline,
 ytmusic-player-queue-item .duration {
-    color: #fff !important;
+    color: var(--fill-color) !important;
 }
 
 ytmusic-player-queue-item:hover .song-info,
@@ -164,6 +189,12 @@ ytmusic-player-queue-item .menu {
 
 ytmusic-player-queue-item .menu button {
     pointer-events: auto !important;
+}
+
+/* Ensure background overlay sits below text/content */
+ytmusic-player-queue-item .thumbnail-overlay,
+ytmusic-player-queue-item ytmusic-background-overlay-renderer#background {
+    z-index: 1 !important;
 }
 
 /* progress bar in legacy YT player */
