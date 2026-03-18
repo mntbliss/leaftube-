@@ -358,6 +358,7 @@ input[type='checkbox']:checked::before {
 .cover-pop {
     position: absolute;
     inset: 0;
+    z-index: 3;
     border-radius: 22px;
     display: flex;
     align-items: center;
@@ -566,14 +567,18 @@ input[type='checkbox']:checked::before {
     align-items: center;
     justify-self: center;
     align-self: center;
-    height: 10px;
+    gap: 8px;
     width: 90%;
+    padding: 0 5px;
+    box-sizing: border-box;
+    min-height: 14px;
 }
 
 .progress-track {
     position: relative;
     flex: 1;
-    height: 100%;
+    min-width: 0;
+    height: 10px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.16);
     overflow: hidden;
@@ -593,25 +598,21 @@ input[type='checkbox']:checked::before {
     transition: width 420ms linear;
 }
 
-.progress-time-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.75);
-    padding: 0 2px;
-}
-
 .progress-time {
+    flex-shrink: 0;
+    font-size: 10px;
+    line-height: 1;
     white-space: nowrap;
+    color: rgba(150, 205, 160, 0.82);
+    font-variant-numeric: tabular-nums;
 }
 
-.progress-time--current {
-    opacity: 0.9;
+.progress-time-position {
+    color: rgba(145, 200, 155, 0.88);
 }
 
-.progress-time--duration {
-    opacity: 0.7;
+.progress-time-duration {
+    color: rgba(130, 188, 142, 0.72);
 }
 
 /* ----- settings ----- */

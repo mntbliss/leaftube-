@@ -1,6 +1,6 @@
 <script setup>
     import { computed, ref, watch } from 'vue'
-    import { playPause, next, previous, likeCurrentTrack, addCurrentTrackToPlaylist, toggleLoop } from '../services/YoutubeService.js'
+    import { playPause, next, previous, likeCurrentTrack, toggleLoop } from '../services/YoutubeService.js'
     import { useVolumeControls } from '../composables/useVolumeControls.js'
     import { LikeFeedbackAction } from '../constants/like-feedback.js'
     import { loopFeedbackIconBasename } from '../constants/loop-feedback.js'
@@ -9,7 +9,7 @@
 
     const props = defineProps({
         nowPlaying: { type: Object, default: null },
-        maxSongTitleLength: { type: Number, default: 36 },
+        maxSongTitleLength: { type: Number, default: 28 },
     })
 
     const progressTrackRef = ref(null)
@@ -168,13 +168,11 @@
             </div>
         </div>
         <div class="progress-row">
+            <span v-if="nowPlaying" class="progress-time progress-time-position">{{ positionText }}</span>
             <div ref="progressTrackRef" class="progress-track" @click="handleProgressTrackClick" @mousedown="handleProgressTrackDown">
                 <div class="progress-filled" :style="{ width: progressWidth }" />
             </div>
-            <div class="progress-time-row" v-if="nowPlaying">
-                <span class="progress-time progress-time--current">{{ positionText }}</span>
-                <span class="progress-time progress-time--duration">{{ durationText }}</span>
-            </div>
+            <span v-if="nowPlaying" class="progress-time progress-time-duration">{{ durationText }}</span>
         </div>
     </div>
 </template>
