@@ -369,7 +369,11 @@ input[type='checkbox']:checked::before {
     width: 56px;
     height: 56px;
     object-fit: contain;
-    animation: cover-pop 600ms ease-out forwards;
+    animation: cover-pop 700ms ease-in-out forwards;
+}
+
+.cover-pop-loop {
+    filter: drop-shadow(0 0 6px rgba(93, 255, 117, 0.45));
 }
 
 .player-body {
@@ -798,13 +802,18 @@ input[type='checkbox']:checked::before {
         opacity: 0;
     }
 
-    40% {
-        transform: scale(1.2);
+    14% {
+        transform: scale(1.28);
+        opacity: 1;
+    }
+
+    55% {
+        transform: scale(1.08);
         opacity: 1;
     }
 
     100% {
-        transform: scale(2);
+        transform: scale(0.98);
         opacity: 0;
     }
 }
