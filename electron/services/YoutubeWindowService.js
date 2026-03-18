@@ -212,15 +212,23 @@ export class YoutubeWindowService {
 
     injectYoutubeDomScripts() {
         if (!this.youtubeView) return
-        if (!this.isVideosInsteadOfPicture) return
         const getInjectionFilePath = fileName => resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.INJECTIONS_DIR, fileName)
+        let queueThumbsScriptContent = ''
         let videoModeScriptContent = ''
         try {
-            videoModeScriptContent = readFileSync(getInjectionFilePath('video-mode.js'), 'utf8')
+            queueThumbsScriptContent = readFileSync(getInjectionFilePath('queue-thumbnails.js'), 'utf8')
+            if (this.isVideosInsteadOfPicture) {
+                videoModeScriptContent = readFileSync(getInjectionFilePath('video-mode.js'), 'utf8')
+            }
         } catch (readError) {
             return
         }
-        runScriptInView(this.youtubeView, videoModeScriptContent).catch(() => {})
+        if (queueThumbsScriptContent) {
+            runScriptInView(this.youtubeView, queueThumbsScriptContent).catch(() => {})
+        }
+        if (videoModeScriptContent) {
+            runScriptInView(this.youtubeView, videoModeScriptContent).catch(() => {})
+        }
     }
 
     startNowPlayingPolling({ onNowPlaying, onPresence, onVolumeChangedFromView }) {
