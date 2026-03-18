@@ -190,11 +190,6 @@ function registerPlayerHandlers(ipcMain, youtubeWindowService) {
         }
     })
 
-    ipcMain.handle(IpcChannel.PLAYER_ADD_TO_PLAYLIST, async () => {
-        ensureYoutubeReady()
-        return safePlayerInvoke(() => youtubeWindowService.addCurrentTrackToPlaylist())
-    })
-
     ipcMain.handle(IpcChannel.PLAYER_TOGGLE_LOOP, async () => {
         ensureYoutubeReady()
         return safePlayerInvoke(() => youtubeWindowService.toggleLoop())

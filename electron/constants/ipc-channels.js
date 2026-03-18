@@ -19,7 +19,6 @@ export const IpcChannel = {
     PLAYER_PREVIOUS: 'player:previous',
     PLAYER_SEEK: 'player:seek',
     PLAYER_LIKE_CURRENT: 'player:like-current',
-    PLAYER_ADD_TO_PLAYLIST: 'player:add-to-playlist',
     PLAYER_TOGGLE_LOOP: 'player:toggle-loop',
     PLAYER_SET_VOLUME: 'player:set-volume',
     PLAYER_SET_MUTED: 'player:set-muted',

@@ -14,7 +14,6 @@ import {
     setMediaMuted,
     getMediaVolume,
     clickLikeButton,
-    clickAddToPlaylist,
     clickRepeatButton,
     readRepeatModeFromPlayerBar,
 } from './YoutubeHandler.js'
@@ -332,11 +331,6 @@ export class YoutubeWindowService {
     async likeCurrentTrack() {
         if (!this.youtubeView) return null
         return clickLikeButton(this.youtubeView)
-    }
-
-    async addCurrentTrackToPlaylist() {
-        if (!this.youtubeView) return
-        await clickAddToPlaylist(this.youtubeView)
     }
 
     async toggleLoop() {
