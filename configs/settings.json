@@ -34,7 +34,7 @@
     "url": "https://music.youtube.com",
     "isVideosInsteadOfPicture": true,
     "pollIntervalMs": 400,
-    "maxSongTitleLength": 36,
+    "maxSongTitleLength": 28,
     "volumeLevel": 0.5,
     "isMuted": false
   }
