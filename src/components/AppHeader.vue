@@ -17,7 +17,7 @@
                 <img class="icon-image" src="/icons/discord.png" alt="" />
             </button>
             <button class="icon-button icon-toggle" :class="{ 'is-on': isPinned }" type="button" @click="$emit('toggle-pinned')">
-                <img class="icon-image" src="/icons/lock.png" alt="">
+                <img class="icon-image" src="/icons/lock.png" alt="" />
             </button>
             <button class="icon-button icon-gear" type="button" @click="$emit('open-settings')">
                 <img class="icon-image" src="/icons/settings.png" alt="" />

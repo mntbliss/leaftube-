@@ -128,7 +128,9 @@
     <div class="settings-root">
         <div class="settings-card">
             <header class="settings-header">
-                <h2>settings <span v-if="appVersion" class="settings-version">v{{ appVersion }}</span></h2>
+                <h2>
+                    settings <span v-if="appVersion" class="settings-version">v{{ appVersion }}</span>
+                </h2>
                 <button type="button" class="settings-close" @click="closeWindow">×</button>
             </header>
 

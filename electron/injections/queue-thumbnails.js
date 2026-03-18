@@ -30,9 +30,7 @@
     }
 
     function upgradeAllQueueThumbs() {
-        var imgs = document.querySelectorAll(
-            'ytmusic-player-queue-item yt-img-shadow img#img, ytmusic-player-queue-item yt-img-shadow img'
-        )
+        var imgs = document.querySelectorAll('ytmusic-player-queue-item yt-img-shadow img#img, ytmusic-player-queue-item yt-img-shadow img')
         for (var i = 0; i < imgs.length; i++) {
             upgradeQueueThumb(imgs[i])
         }
@@ -64,4 +62,3 @@
         }
     } catch (error) {}
 })()
-
