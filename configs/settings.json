@@ -10,7 +10,8 @@
     "minWidth": 480,
     "minHeight": 200,
     "isAcrylic": false,
-    "electronPaddingForAnimation": 0
+    "electronPaddingForAnimation": 0,
+    "isPinned": true
   },
   "settingsWindow": {
     "width": 540,

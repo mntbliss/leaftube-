@@ -106,6 +106,22 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return {}
     })
 
+    ipcMain.handle(IpcChannel.UI_SET_PINNED, async (_event, pinned) => {
+        const value = Boolean(pinned)
+        try {
+            const settings = ConfigService.loadSettings()
+            if (!settings.window) settings.window = {}
+            settings.window.isPinned = value
+            ConfigService.saveSettings(settings)
+            if (mainWindowService && typeof mainWindowService.setPinned === 'function') {
+                mainWindowService.setPinned(value)
+            }
+        } catch (error) {
+            errorWithBuffer('[IpcService] ui:set-pinned failed', error)
+        }
+        return { isPinned: value }
+    })
+
     ipcMain.handle(IpcChannel.UI_YOUTUBE_NAVIGATE, async (_event, path) => {
         console.log('[IpcService] UI_YOUTUBE_NAVIGATE', { path, hasService: !!youtubeWindowService })
         if (youtubeWindowService) youtubeWindowService.navigateTo(path)

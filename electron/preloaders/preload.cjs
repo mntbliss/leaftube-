@@ -14,6 +14,7 @@ const IpcChannel = {
     UI_RESTART_APP: 'ui:restart-app',
     UI_OPEN_SETTINGS: 'ui:open-settings',
     UI_MINI_POP: 'ui:mini-pop',
+    UI_SET_PINNED: 'ui:set-pinned',
     PLAYER_PLAY_PAUSE: 'player:play-pause',
     PLAYER_NEXT: 'player:next',
     PLAYER_PREVIOUS: 'player:previous',
@@ -61,6 +62,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         },
         openSettings() {
             return ipcRenderer.invoke(IpcChannel.UI_OPEN_SETTINGS)
+        },
+        setPinned(pinned) {
+            return ipcRenderer.invoke(IpcChannel.UI_SET_PINNED, pinned)
         },
         restartApp() {
             return ipcRenderer.invoke(IpcChannel.UI_RESTART_APP)

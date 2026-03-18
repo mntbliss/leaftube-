@@ -1,9 +1,10 @@
 <script setup>
     defineProps({
         discordEnabled: { type: Boolean, required: true },
+        isPinned: { type: Boolean, required: true },
     })
 
-    defineEmits(['toggle-discord', 'toggle-expanded', 'open-settings', 'close-app'])
+    defineEmits(['toggle-discord', 'toggle-pinned', 'toggle-expanded', 'open-settings', 'close-app'])
 </script>
 
 <template>
@@ -14,6 +15,9 @@
         <div class="app-icon-row">
             <button class="icon-button icon-toggle" :class="{ 'is-on': discordEnabled }" type="button" @click="$emit('toggle-discord')">
                 <img class="icon-image" src="/icons/discord.png" alt="" />
+            </button>
+            <button class="icon-button icon-toggle" :class="{ 'is-on': isPinned }" type="button" @click="$emit('toggle-pinned')">
+                <img class="icon-image" src="/icons/lock.png" alt="">
             </button>
             <button class="icon-button icon-gear" type="button" @click="$emit('open-settings')">
                 <img class="icon-image" src="/icons/settings.png" alt="" />
@@ -69,5 +73,10 @@
     .app-icon-row .icon-button:nth-child(4) {
         animation: header-item-fade 260ms ease-out forwards;
         animation-delay: 900ms;
+    }
+
+    .app-icon-row .icon-button:nth-child(5) {
+        animation: header-item-fade 260ms ease-out forwards;
+        animation-delay: 1050ms;
     }
 </style>

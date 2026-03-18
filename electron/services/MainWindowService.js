@@ -15,6 +15,8 @@ export class MainWindowService {
 
         this.mainWindow = undefined
         this.closeToTrayCallback = null
+        const pinnedSetting = appSettings?.window?.isPinned
+        this.isPinned = pinnedSetting === undefined ? true : Boolean(pinnedSetting)
     }
 
     setCloseToTrayCallback(callback) {
@@ -41,6 +43,7 @@ export class MainWindowService {
             icon: iconPath,
             ...getTransparentFrameOptions(this.isAcrylic),
             webPreferences: getWebPreferences({ preloadPath }),
+            alwaysOnTop: this.isPinned,
         })
 
         // no EventEmitter MaxListenersExceededWarning from 3rd party listeners
@@ -66,6 +69,8 @@ export class MainWindowService {
         this.mainWindow.on('closed', () => {
             this.mainWindow = undefined
         })
+
+        this.applyPinnedState()
     }
 
     getMainWindow() {
@@ -91,5 +96,16 @@ export class MainWindowService {
         } catch {
             // ignore if renderer is a crybaby
         }
+    }
+
+    applyPinnedState() {
+        if (!this.mainWindow) return
+        this.mainWindow.setAlwaysOnTop(this.isPinned, 'screen-saver')
+        this.mainWindow.setVisibleOnAllWorkspaces(this.isPinned, { visibleOnFullScreen: true })
+    }
+
+    setPinned(isPinned) {
+        this.isPinned = Boolean(isPinned)
+        this.applyPinnedState()
     }
 }

@@ -166,6 +166,10 @@
                         <span>Acrylic background</span>
                         <input v-model="settings.window.isAcrylic" type="checkbox" />
                     </label>
+                    <label class="settings-row">
+                        <span>Pin mini-player on top</span>
+                        <input v-model="settings.window.isPinned" type="checkbox" />
+                    </label>
                 </section>
 
                 <section v-if="settings" class="settings-section">

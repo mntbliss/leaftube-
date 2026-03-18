@@ -7,6 +7,7 @@
 
     const config = ref(null)
     const discordEnabled = ref(false)
+    const isPinned = ref(true)
     const isLoadingConfig = ref(true)
     const nowPlaying = ref(null)
     const miniPopKey = ref(0)
@@ -35,6 +36,7 @@
             const loaded = await window.desktopBridge.config.get()
             config.value = loaded
             discordEnabled.value = loaded.discordEnabled
+            isPinned.value = loaded?.settings?.window?.isPinned !== false
             LoggerService.init(loaded.settings)
             isLoadingConfig.value = false
         } catch (error) {
@@ -57,6 +59,20 @@
             LoggerService.log('[Discord] result:', result)
         } catch (error) {
             LoggerService.errorDump('Failed to toggle Discord Rich Presence', error)
+        }
+    }
+
+    async function togglePinned() {
+        const requestedPinned = !isPinned.value
+        try {
+            const result = await window.desktopBridge?.ui?.setPinned?.(requestedPinned)
+            if (result && typeof result.isPinned === 'boolean') {
+                isPinned.value = result.isPinned
+            } else {
+                isPinned.value = requestedPinned
+            }
+        } catch (error) {
+            LoggerService.errorDump('Failed to toggle pinned state', error)
         }
     }
 
@@ -101,7 +117,9 @@
         <div :key="'card-main-' + miniPopKey" class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': isAcrylic }">
             <AppHeader
                 :discord-enabled="discordEnabled"
+                :is-pinned="isPinned"
                 @toggle-discord="toggleDiscord"
+                @toggle-pinned="togglePinned"
                 @toggle-expanded="expandYoutube"
                 @open-settings="openSettings"
                 @close-app="closeApp" />
