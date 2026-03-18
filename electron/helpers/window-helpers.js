@@ -67,6 +67,7 @@ export function getWebPreferences(options = {}) {
     const prefs = {
         contextIsolation: true,
         nodeIntegration: false,
+        sandbox: false,
     }
     if (preloadPath) prefs.preload = preloadPath
     if (partition) prefs.partition = partition
