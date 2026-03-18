@@ -26,9 +26,15 @@ export function buildDiscordActivity(payload, options = {}) {
 
     const nowSeconds = Math.floor(Date.now() / 1000)
     const safePosition = typeof positionSeconds === 'number' && isFinite(positionSeconds) ? positionSeconds : 0
+
+    // Discord RPC: "state" must be at least 2 characters (empty / 1-char titles fail).
+    const rawTitle = typeof title === 'string' ? title.trim() : ''
+    let stateText = rawTitle.length >= 2 ? rawTitle : String(idleStateText ?? '').trim()
+    if (stateText.length < 2) stateText = '♪ ♪'
+
     const activity = {
         details: '₊˚✧ ◡◠◡◜🌺◝◡◠◡ ✧˚₊',
-        state: title || idleStateText,
+        state: stateText,
         largeImageKey,
         largeImageText: channel || idleLargeImageText,
         startTimestamp: Math.max(0, nowSeconds - Math.floor(safePosition)),
