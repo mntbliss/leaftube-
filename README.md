@@ -22,7 +22,7 @@
 
 <p align="center">
   <img src="docs/screenshots/leaftube4.png" alt="" width="340" />
-  <img src="docs/screenshots/leaftube2.png" alt="" width="340" />
+  <img src="docs/screenshots/leaftube3.png" alt="" width="340" />
   
   <img src="docs/screenshots/leaftube6.png" alt="" width="340" />
   <img src="docs/screenshots/leaftube7.png" alt="" width="340" />
