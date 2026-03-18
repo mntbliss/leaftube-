@@ -31,8 +31,25 @@ export async function clickPlayerButton(youtubeView, action) {
           if (playAllButton && !playAllButton.closest('ytmusic-player-bar')) {
             playAllButton.click()
           } else {
-            const firstItemLink = mainContent.querySelector('ytmusic-two-row-item-renderer a.yt-simple-endpoint.image-wrapper[href*="watch?v="]')
-            if (firstItemLink && !firstItemLink.closest('ytmusic-player-bar')) firstItemLink.click()
+            const linkSelectors = [
+              // Home-like shelves
+              'ytmusic-two-row-item-renderer a.yt-simple-endpoint.image-wrapper[href*="watch?v="]',
+              'ytmusic-two-row-item-renderer a.yt-simple-endpoint[href*="watch?v="]',
+              // Logged-in library / playlist routes can use different renderers.
+              'ytmusic-playlist-shelf-renderer a[href*="watch?v="]',
+              'ytmusic-playlist-video-renderer a[href*="watch?v="]',
+              'ytmusic-item-section-renderer a[href*="watch?v="]',
+              // Last resort: first watch link anywhere in the page content.
+              'a[href*="watch?v="]'
+            ]
+
+            for (const sel of linkSelectors) {
+              const link = mainContent.querySelector(sel)
+              if (link && !link.closest('ytmusic-player-bar')) {
+                link.click()
+                break
+              }
+            }
           }
         } else {
           clickControlButton(selectors.playPause)

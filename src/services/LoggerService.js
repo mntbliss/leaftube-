@@ -1,8 +1,6 @@
-let cachedSettings = null
 let cachedIsRelease = false
 
 export function init(settings, isRelease) {
-    if (settings != null) cachedSettings = settings
     if (isRelease !== undefined) cachedIsRelease = Boolean(isRelease)
 }
 
@@ -24,4 +22,13 @@ export function debug(...args) {
 
 export function errorDump(message, error) {
     error(message, error)
+    try {
+        const reportError = window?.desktopBridge?.logs?.reportError
+        if (typeof reportError === 'function') {
+            const stack = error && typeof error === 'object' && error.stack ? error.stack : null
+            const errMsg = stack ? `${String(message)}\n${stack}` : String(message)
+            // logs buffer lives in main process
+            reportError(errMsg).catch(() => {})
+        }
+    } catch {}
 }

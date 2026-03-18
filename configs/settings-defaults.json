@@ -10,6 +10,7 @@
     "minWidth": 480,
     "minHeight": 200,
     "isAcrylic": false,
+    "disableHardwareAcceleration": false,
     "electronPaddingForAnimation": 0,
     "isPinned": true
   },

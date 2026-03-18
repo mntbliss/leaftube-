@@ -6,12 +6,10 @@ import { buildDiscordActivity } from '../helpers/discord-activity.js'
 export let isEnabled = false
 
 let appSettings
-let electronApp
 let rpcClient
 let rpcReady = false
 
-export function initDiscordService({ app, settings, rootPath }) {
-    electronApp = app
+export function initDiscordService({ settings }) {
     appSettings = settings
 
     isEnabled = Boolean(appSettings.discordRichPresence?.isEnabledByDefault)

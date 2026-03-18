@@ -8,7 +8,6 @@
     const config = ref(null)
     const discordEnabled = ref(false)
     const isPinned = ref(true)
-    const isLoadingConfig = ref(true)
     const nowPlaying = ref(null)
     const miniPopKey = ref(0)
 
@@ -38,10 +37,8 @@
             discordEnabled.value = loaded.discordEnabled
             isPinned.value = loaded?.settings?.window?.isPinned !== false
             LoggerService.init(loaded.settings)
-            isLoadingConfig.value = false
         } catch (error) {
             LoggerService.errorDump('Failed to load config', error)
-            isLoadingConfig.value = false
         }
     }
 

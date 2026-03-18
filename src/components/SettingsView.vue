@@ -12,6 +12,10 @@
         try {
             const loaded = await window.desktopBridge.config.get()
             const safeSettings = loaded?.settings ? JSON.parse(JSON.stringify(loaded.settings)) : {}
+            // UI normalization: main-process treats missing `isPinned` as true.
+            if (!safeSettings.window) safeSettings.window = {}
+            if (safeSettings.window.isPinned === undefined) safeSettings.window.isPinned = true
+            if (safeSettings.window.disableHardwareAcceleration === undefined) safeSettings.window.disableHardwareAcceleration = false
             settings.value = safeSettings
             originalSettings.value = JSON.parse(JSON.stringify(safeSettings))
             appVersion.value = loaded?.version ?? ''
@@ -167,6 +171,10 @@
                     <label class="settings-row">
                         <span>Acrylic background</span>
                         <input v-model="settings.window.isAcrylic" type="checkbox" />
+                    </label>
+                    <label class="settings-row">
+                        <span>Disable hardware acceleration</span>
+                        <input v-model="settings.window.disableHardwareAcceleration" type="checkbox" />
                     </label>
                     <label class="settings-row">
                         <span>Pin mini-player on top</span>

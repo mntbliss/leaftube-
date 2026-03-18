@@ -1,6 +1,5 @@
 import { join, resolve, dirname } from 'node:path'
 import { existsSync } from 'node:fs'
-import { nativeImage } from 'electron'
 import { Path } from '../constants/path.js'
 
 /**
@@ -20,29 +19,6 @@ export function getIconPath(app, rootDirPath) {
         if (existsSync(path)) return path
     }
     return candidates[0]
-}
-
-/**
- * load icon as NativeImage from first path that loads
- * for windows/tray when path alone fails
- */
-export function getIconImage(app, rootDirPath) {
-    if (!app.isPackaged) {
-        const path = resolve(rootDirPath, Path.BUILD_DIR, Path.ICON_FILENAME)
-        const img = nativeImage.createFromPath(path)
-        return img.isEmpty() ? null : img
-    }
-    const appRoot = dirname(app.getPath('exe'))
-    const candidates = [
-        join(process.resourcesPath, Path.BUILD_DIR, Path.ICON_FILENAME),
-        join(process.resourcesPath, Path.ICON_FILENAME),
-        join(appRoot, Path.BUILD_DIR, Path.ICON_FILENAME),
-    ]
-    for (const path of candidates) {
-        const img = nativeImage.createFromPath(path)
-        if (!img.isEmpty()) return img
-    }
-    return null
 }
 
 /**

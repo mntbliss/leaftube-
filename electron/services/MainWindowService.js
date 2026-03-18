@@ -1,13 +1,13 @@
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
 import { IpcChannel } from '../constants/ipc-channels.js'
 import { Path } from '../constants/path.js'
 import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
+import * as LogBufferService from './LogBufferService.js'
 
 export class MainWindowService {
-    constructor({ app, BrowserWindow, session, appSettings, rootDirPath, isAcrylic, isDeveloperConsoleEnabled }) {
+    constructor({ app, BrowserWindow, appSettings, rootDirPath, isAcrylic, isDeveloperConsoleEnabled }) {
         this.app = app
         this.BrowserWindow = BrowserWindow
-        this.session = session
         this.appSettings = appSettings
         this.rootDirPath = rootDirPath
         this.isAcrylic = isAcrylic
@@ -50,12 +50,100 @@ export class MainWindowService {
         // memory leak bad uh-uh
         this.mainWindow.webContents.setMaxListeners(50)
 
+        // Helps debug “window stays transparent/empty” cases on specific PCs
+        this.mainWindow.webContents.on('did-start-loading', () => {
+            try {
+                LogBufferService.addError(new Error('[MainWindow] did-start-loading'))
+            } catch {}
+        })
+
+        this.mainWindow.webContents.on('did-finish-load', () => {
+            try {
+                LogBufferService.addError(new Error('[MainWindow] did-finish-load'))
+            } catch {}
+        })
+
+        this.mainWindow.webContents.on('dom-ready', () => {
+            try {
+                LogBufferService.addError(new Error('[MainWindow] dom-ready'))
+            } catch {}
+        })
+
+        this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+            try {
+                // Also prints to devtools/console for faster triage
+                console.log('[MainWindow] did-fail-load', errorCode, errorDescription)
+                LogBufferService.addError(new Error(
+                    `[MainWindow] did-fail-load: code=${errorCode} desc=${errorDescription} url=${validatedURL} mainFrame=${isMainFrame}`
+                ))
+                try {
+                    const appDir = this.app.isPackaged ? dirname(this.app.getPath('exe')) : this.app.getAppPath()
+                    LogBufferService.saveToFile(appDir)
+                } catch {}
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        // These events often explain “blank/transparent” states
+        this.mainWindow.webContents.on('render-process-gone', (event, details) => {
+            try {
+                const reason = details?.reason ?? 'unknown'
+                LogBufferService.addError(new Error(`[MainWindow] render-process-gone: reason=${reason}`))
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.mainWindow.webContents.on('crashed', (event) => {
+            try {
+                LogBufferService.addError(new Error('[MainWindow] webContents crashed'))
+                try {
+                    const appDir = this.app.isPackaged ? dirname(this.app.getPath('exe')) : this.app.getAppPath()
+                    LogBufferService.saveToFile(appDir)
+                } catch {}
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.mainWindow.webContents.on('unresponsive', (event) => {
+            try {
+                LogBufferService.addError(new Error('[MainWindow] webContents became unresponsive'))
+                try {
+                    const appDir = this.app.isPackaged ? dirname(this.app.getPath('exe')) : this.app.getAppPath()
+                    LogBufferService.saveToFile(appDir)
+                } catch {}
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.mainWindow.webContents.on('console-message', (_event, params) => {
+            try {
+                const lvlStr = String(params?.level || '').toLowerCase()
+                const msg = params?.message
+                const ln = params?.line
+                const src = params?.sourceId
+                if (lvlStr.includes('error')) {
+                    LogBufferService.addError(new Error(
+                        `[MainWindow] console.error: ${String(msg)} (${src}:${ln})`
+                    ))
+                }
+            } catch {
+                // ignore logger failures
+            }
+        })
+
         const session = this.mainWindow.webContents.session
         session.setPermissionRequestHandler((_webContents, _permission, callback) => {
             callback(false)
         })
 
-        this.mainWindow.loadFile(resolve(this.rootDirPath, Path.DIST_DIR, Path.INDEX_HTML_FILENAME))
+        // When packaged, prefer Electron's app path (portable vs installer layouts differ).
+        const rendererBaseDir = this.app?.isPackaged ? this.app.getAppPath?.() : this.rootDirPath
+        const rendererIndexPath = resolve(rendererBaseDir || this.rootDirPath, Path.DIST_DIR, Path.INDEX_HTML_FILENAME)
+        this.mainWindow.loadFile(rendererIndexPath)
 
         if (this.isDeveloperConsoleEnabled) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
 

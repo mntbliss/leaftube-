@@ -5,6 +5,7 @@ import { PlayerAction } from '../constants/player-actions.js'
 import { runScriptInView } from '../helpers/view-helpers.js'
 import { getIconPath, getTransparentFrameOptions, getWebPreferences } from '../helpers/window-helpers.js'
 import { showSmooth, hideSmooth } from '../helpers/youtube-smooth-helpers.js'
+import * as LogBufferService from './LogBufferService.js'
 import {
     readNowPlaying,
     clickPlayerButton,
@@ -34,7 +35,6 @@ export class YoutubeWindowService {
 
         this.youtubeWindow = undefined
         this.youtubeView = undefined
-        this.headerHeight = 50
         this.isFirstYoutubeLoad = true
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
@@ -98,24 +98,84 @@ export class YoutubeWindowService {
         })
         this.youtubeView.webContents.setMaxListeners(50)
 
+        // Helps debug YouTube view “blank/transparent” states on specific PCs
+        this.youtubeView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+            try {
+                // Also prints to devtools/console for faster triage
+                console.log('[YoutubeView] did-fail-load', errorCode, errorDescription)
+                LogBufferService.addError(new Error(
+                    `[YoutubeView] did-fail-load: code=${errorCode} desc=${errorDescription} url=${validatedURL} mainFrame=${isMainFrame}`
+                ))
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.youtubeView.webContents.on('render-process-gone', (_event, details) => {
+            try {
+                const reason = details?.reason ?? 'unknown'
+                LogBufferService.addError(new Error(`[YoutubeView] render-process-gone: reason=${reason}`))
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.youtubeView.webContents.on('crashed', () => {
+            try {
+                LogBufferService.addError(new Error('[YoutubeView] webContents crashed'))
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.youtubeView.webContents.on('unresponsive', () => {
+            try {
+                LogBufferService.addError(new Error('[YoutubeView] webContents became unresponsive'))
+            } catch {
+                // ignore logger failures
+            }
+        })
+
+        this.youtubeView.webContents.on('console-message', (_event, params) => {
+            try {
+                const lvlStr = String(params?.level || '').toLowerCase()
+                const msg = params?.message
+                const ln = params?.line
+                const src = params?.sourceId
+                if (lvlStr.includes('error')) {
+                    LogBufferService.addError(new Error(
+                        `[YoutubeView] console.error: ${String(msg)} (${src}:${ln})`
+                    ))
+                }
+            } catch {
+                // ignore logger failures
+            }
+        })
+
         // Block HTML5 fullscreen inside the YT Music view
         this.youtubeView.webContents.on('enter-html-full-screen', event => {
             try {
                 if (event && typeof event.preventDefault === 'function') event.preventDefault()
             } catch {}
             try {
-                this.youtubeView.setFullScreen(false)
+                this.youtubeWindow.setFullScreen(false)
             } catch {}
         })
         this.youtubeView.webContents.on('leave-html-full-screen', () => {
             try {
-                this.youtubeView.setFullScreen(false)
+                this.youtubeWindow.setFullScreen(false)
             } catch {}
         })
 
         this.youtubeWindow.setBrowserView(this.youtubeView)
         this.resizeView()
-        this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url)
+        this.youtubeView.webContents.loadURL(this.appSettings.youtubeMusic.url).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
 
         if (isPreloading && restoredBounds) {
             this.youtubeView.webContents.once('did-finish-load', () => {
@@ -180,7 +240,11 @@ export class YoutubeWindowService {
         const script = isVisible
             ? "document && document.body && document.body.classList.add('is-content-visible');"
             : "document && document.body && document.body.classList.remove('is-content-visible');"
-        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(error) {} })();`).catch(() => {})
+        runScriptInView(this.youtubeView, `(function(){ try { ${script} } catch(error) {} })();`).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {}
+        })
     }
 
     setContentAreaOpacity(opacityValue) {
@@ -192,7 +256,11 @@ export class YoutubeWindowService {
           var contentRoot = document.body && document.body.firstElementChild;
           if (contentRoot) { contentRoot.style.transition = 'opacity 200ms ease-out'; contentRoot.style.opacity = ${clamped}; }
         } catch (error) {} })();`
-        runScriptInView(this.youtubeView, script).catch(() => {})
+        runScriptInView(this.youtubeView, script).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {}
+        })
     }
 
     animateWindowOpacity(fromValue, toValue, durationMs, onComplete) {
@@ -217,7 +285,13 @@ export class YoutubeWindowService {
     injectDebloatCss() {
         if (!this.youtubeView) return
         if (!this.youtubeDebloatCss) return
-        this.youtubeView.webContents.insertCSS(this.youtubeDebloatCss)
+        this.youtubeView.webContents.insertCSS(this.youtubeDebloatCss).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
     }
 
     injectHeaderIntoYoutubePage() {
@@ -229,10 +303,27 @@ export class YoutubeWindowService {
             headerCssContent = readFileSync(getInjectionFilePath('header-inject.css'), 'utf8')
             headerJsContent = readFileSync(getInjectionFilePath('header-inject.js'), 'utf8')
         } catch (readError) {
+            try {
+                LogBufferService.addError(readError instanceof Error ? readError : new Error(String(readError)))
+            } catch {
+                // ignore logger failures
+            }
             return
         }
-        this.youtubeView.webContents.insertCSS(headerCssContent).catch(() => {})
-        runScriptInView(this.youtubeView, headerJsContent).catch(() => {})
+        this.youtubeView.webContents.insertCSS(headerCssContent).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
+        runScriptInView(this.youtubeView, headerJsContent).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
     }
 
     injectYoutubeDomScripts() {
@@ -240,19 +331,57 @@ export class YoutubeWindowService {
         const getInjectionFilePath = fileName => resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.INJECTIONS_DIR, fileName)
         let queueThumbsScriptContent = ''
         let videoModeScriptContent = ''
+        let fullscreenBlockerScriptContent = ''
         try {
             queueThumbsScriptContent = readFileSync(getInjectionFilePath('queue-thumbnails.js'), 'utf8')
             if (this.isVideosInsteadOfPicture) {
                 videoModeScriptContent = readFileSync(getInjectionFilePath('video-mode.js'), 'utf8')
             }
         } catch (readError) {
+            try {
+                LogBufferService.addError(readError instanceof Error ? readError : new Error(String(readError)))
+            } catch {
+                // ignore logger failures
+            }
             return
         }
+        try {
+            // Always attempt to load fullscreen blocker (prevents YT full-screen overlay from breaking UI)
+            fullscreenBlockerScriptContent = readFileSync(getInjectionFilePath('fullscreen-blocker.js'), 'utf8')
+        } catch (readError) {
+            try {
+                LogBufferService.addError(readError instanceof Error ? readError : new Error(String(readError)))
+            } catch {
+                // ignore logger failures
+            }
+            fullscreenBlockerScriptContent = ''
+        }
         if (queueThumbsScriptContent) {
-            runScriptInView(this.youtubeView, queueThumbsScriptContent).catch(() => {})
+            runScriptInView(this.youtubeView, queueThumbsScriptContent).catch(error => {
+                try {
+                    LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+                } catch {
+                    // ignore logger failures
+                }
+            })
+        }
+        if (fullscreenBlockerScriptContent) {
+            runScriptInView(this.youtubeView, fullscreenBlockerScriptContent).catch(error => {
+                try {
+                    LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+                } catch {
+                    // ignore logger failures
+                }
+            })
         }
         if (videoModeScriptContent) {
-            runScriptInView(this.youtubeView, videoModeScriptContent).catch(() => {})
+            runScriptInView(this.youtubeView, videoModeScriptContent).catch(error => {
+                try {
+                    LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+                } catch {
+                    // ignore logger failures
+                }
+            })
         }
     }
 
@@ -352,8 +481,16 @@ export class YoutubeWindowService {
 
     applyStoredVolume() {
         if (!this.youtubeView) return
-        setMediaVolume(this.youtubeView, this.lastVolume).catch(() => {})
-        setMediaMuted(this.youtubeView, this.wasLastMuted).catch(() => {})
+        setMediaVolume(this.youtubeView, this.lastVolume).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {}
+        })
+        setMediaMuted(this.youtubeView, this.wasLastMuted).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {}
+        })
     }
 
     async getVolume() {
@@ -386,7 +523,13 @@ export class YoutubeWindowService {
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
         const segment = path && String(path).startsWith('/') ? path : `/${path || ''}`
         const url = segment === '/' ? base : `${base}${segment}`
-        this.youtubeView.webContents.loadURL(url).catch(() => {})
+        this.youtubeView.webContents.loadURL(url).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
     }
 
     runSearch(query) {
@@ -397,7 +540,13 @@ export class YoutubeWindowService {
         this.setContentAreaOpacity(0)
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
         const url = `${base}/search?q=${encodeURIComponent(searchQuery)}`
-        this.youtubeView.webContents.loadURL(url).catch(() => {})
+        this.youtubeView.webContents.loadURL(url).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
     }
 
     openSettingsInView() {
@@ -405,6 +554,12 @@ export class YoutubeWindowService {
         this.setContentVisible(false)
         this.setContentAreaOpacity(0)
         const base = (this.appSettings?.youtubeMusic?.url || 'https://music.youtube.com').replace(/\/$/, '')
-        this.youtubeView.webContents.loadURL(`${base}/settings`).catch(() => {})
+        this.youtubeView.webContents.loadURL(`${base}/settings`).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {
+                // ignore logger failures
+            }
+        })
     }
 }

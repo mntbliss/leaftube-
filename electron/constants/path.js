@@ -8,8 +8,6 @@ export const Path = {
     DIST_DIR: 'dist',
     PRELOAD_FILENAME: 'preload.cjs',
     YOUTUBE_BAR_PRELOAD_FILENAME: 'youtubeBarPreload.cjs',
-    YOUTUBE_BAR_HTML_FILENAME: 'youtubeBar.html',
     INDEX_HTML_FILENAME: 'index.html',
-    RPC_WORKER_FILENAME: 'rpcWorker.js',
     YOUTUBE_PARTITION: 'persist:youtube',
 }

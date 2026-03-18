@@ -1,6 +1,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { getVolume, setVolume, setMuted } from '../services/YoutubeService.js'
 import { getFractionFromTrackClick } from '../helpers/trackClick.js'
+import * as LoggerService from '../services/LoggerService.js'
 
 export function useVolumeControls(volumeTrackRef) {
     const volumePercent = ref(100)
@@ -25,7 +26,9 @@ export function useVolumeControls(volumeTrackRef) {
             if (state && typeof state.isMuted === 'boolean') {
                 isMuted.value = state.isMuted
             }
-        } catch {}
+        } catch (error) {
+            LoggerService.errorDump('[useVolumeControls] Failed to load initial volume state', error)
+        }
     })
 
     async function handleMuteClick() {
