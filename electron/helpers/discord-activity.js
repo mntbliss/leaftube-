@@ -34,7 +34,8 @@ function buildLeafDeepLinkFromWatchUrl(watchUrl, positionSeconds) {
             return ''
         }
 
-        return `leaf://${encodeURIComponent(deepLinkTarget)}:${safeSeconds}`
+        // use path style uRL to avoid path rewriting by external apps (e.g. fcking discord)
+        return `leaf:///${deepLinkTarget}:${safeSeconds}`
     } catch {
         return ''
     }

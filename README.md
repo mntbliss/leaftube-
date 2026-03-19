@@ -41,14 +41,20 @@
 
 <div align="left">
 
-- [ ] 🐛 cannot `sign in` while playing song (settings does not apply to (rights))  
+- no ads
+- de-bloated UI / play / other lists
+- no pause (idk about that never got it)
+- discord RPC + listen together
+- customisation (custom buttons / custom app setup / acrylic theme / etc.)
+- pin (lock) on top of all windows
+- mini player (with like/dislike and loop cycles on tap/doubletap poster)
 - custom protocol `leaf://` deeplinking, so users can link track/playlist directly
 
 
 ✧ Supported deeplink formats
-direct video id: `leaf://dQw4w9WgXcQ[:seconds]`, `leaf://watch?v=your_video_id:at_seconds`
-track alias: `leaf://track/dQw4w9WgXcQ[:seconds]`
-playlist alias: `leaf://playlist/PL...[:seconds]`
+direct video id: `leaf:///dQw4w9WgXcQ[:seconds]`, `leaf:///watch?v=your_video_id:at_seconds`
+track alias: `leaf:///track/dQw4w9WgXcQ[:seconds]`
+playlist alias: `leaf:///playlist/PL...[:seconds]`
 
 > safe routes with sanitized params only: `watch?v=...` (+ optional safe list, index, start|t) `playlist?list=...`, `browse?browseId=...`
 

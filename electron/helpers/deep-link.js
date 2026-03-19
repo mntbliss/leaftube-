@@ -34,7 +34,8 @@ function normalizeYoutubeTarget(targetText) {
 
     const normalizedTargetText = rawTargetText.startsWith('/') ? rawTargetText.slice(1) : rawTargetText
     const [routeNameRaw, queryStringRaw = ''] = normalizedTargetText.split('?', 2)
-    const routeName = String(routeNameRaw || '').trim().toLowerCase()
+    const routeNameWithPotentialTrailingSlash = String(routeNameRaw || '').trim().toLowerCase()
+    const routeName = routeNameWithPotentialTrailingSlash.replace(/\/+$/, '')
     const queryParams = new URLSearchParams(String(queryStringRaw || ''))
 
     if (routeName === 'watch') {
