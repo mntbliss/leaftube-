@@ -146,4 +146,59 @@
         settingsIconImage.style.height = '20px'
         settingsIconHost.appendChild(settingsIconImage)
     }
+
+    function pauseYoutubePlaybackBestEffort() {
+        try {
+            var mediaElement = document.querySelector('video, audio')
+            if (mediaElement && typeof mediaElement.pause === 'function' && !mediaElement.paused) {
+                mediaElement.pause()
+                return
+            }
+        } catch {}
+
+        try {
+            var pauseButton =
+                document.querySelector('ytmusic-player-bar tp-yt-paper-icon-button.play-pause-button') ||
+                document.querySelector('ytmusic-player-bar #play-pause-button')
+            if (pauseButton && typeof pauseButton.click === 'function') pauseButton.click()
+        } catch {}
+    }
+
+    // workaround: when playback is active, YT can ignore auth click flow
+    // force this (cringe but it works): intercept -> pause -> navigate to sign-in
+    document.addEventListener(
+        'click',
+        function (clickEvent) {
+            try {
+                var eventTarget = clickEvent && clickEvent.target
+                if (!eventTarget || typeof eventTarget.closest !== 'function') return
+                var signInButtonElement = eventTarget.closest('ytmusic-nav-bar a.sign-in-link.app-bar-button')
+                if (!signInButtonElement) return
+
+                if (clickEvent && typeof clickEvent.preventDefault === 'function') clickEvent.preventDefault()
+                if (clickEvent && typeof clickEvent.stopPropagation === 'function') clickEvent.stopPropagation()
+                if (clickEvent && typeof clickEvent.stopImmediatePropagation === 'function') clickEvent.stopImmediatePropagation()
+
+                pauseYoutubePlaybackBestEffort()
+                var signInHref = ''
+                try {
+                    var rawHref = signInButtonElement.getAttribute('href') || ''
+                    var resolvedHref = signInButtonElement.href || rawHref
+                    var isMeaningfulHref = resolvedHref && resolvedHref !== '#' && !/javascript:/i.test(resolvedHref)
+                    if (isMeaningfulHref) signInHref = resolvedHref
+                } catch {}
+
+                if (!signInHref) {
+                    signInHref = 'https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fmusic.youtube.com%2F'
+                }
+
+                setTimeout(function () {
+                    try {
+                        window.location.assign(signInHref)
+                    } catch {}
+                }, 120)
+            } catch {}
+        },
+        true
+    )
 })()
