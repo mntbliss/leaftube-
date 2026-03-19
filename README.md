@@ -37,12 +37,20 @@
   <img src="docs/images/banner_low.png" alt="" width="440" />
 </p>
 
-<h2 align="center">✧˚ ༘ ⋆｡♡˚ To-Do List ˚♡｡⋆ ༘˚✧</h2>
+<h2 align="center">✧˚ ༘ ⋆｡♡˚ Some features ˚♡｡⋆ ༘˚✧</h2>
 
 <div align="left">
 
 - [ ] 🐛 cannot `sign in` while playing song (settings does not apply to (rights))  
-- [ ] 🎨 custom protocol `leaf://` so users can link track directly
+- custom protocol `leaf://` deeplinking, so users can link track/playlist directly
+
+
+✧ Supported deeplink formats
+direct video id: `leaf://dQw4w9WgXcQ[:seconds]`, `leaf://watch?v=your_video_id:at_seconds`
+track alias: `leaf://track/dQw4w9WgXcQ[:seconds]`
+playlist alias: `leaf://playlist/PL...[:seconds]`
+
+> safe routes with sanitized params only: `watch?v=...` (+ optional safe list, index, start|t) `playlist?list=...`, `browse?browseId=...`
 
 </div>
 

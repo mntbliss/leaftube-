@@ -21,7 +21,7 @@ import {
 import { ordinalFromRepeatState, repeatStateFromOrdinal } from '../../src/constants/loop-feedback.js'
 
 export class YoutubeWindowService {
-    constructor({ app, BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss }) {
+    constructor({ app, BrowserWindow, BrowserView, appSettings, rootDirPath, youtubeDebloatCss, onWaitingForShowStateChanged }) {
         this.app = app
         this.BrowserWindow = BrowserWindow
         this.BrowserView = BrowserView
@@ -32,10 +32,14 @@ export class YoutubeWindowService {
         this.isVideosInsteadOfPicture = Boolean(appSettings.youtubeMusic?.isVideosInsteadOfPicture)
         this.pollIntervalMs = Number(appSettings.youtubeMusic?.pollIntervalMs) || 800
         this.presenceUpdateIntervalMs = Number(appSettings.discordRichPresence?.presenceUpdateIntervalMs) || 5000
+        this.onWaitingForShowStateChanged = typeof onWaitingForShowStateChanged === 'function' ? onWaitingForShowStateChanged : null
 
         this.youtubeWindow = undefined
         this.youtubeView = undefined
         this.isFirstYoutubeLoad = true
+        this.isYoutubeWindowPreloading = false
+        this.hasPendingShowRequest = false
+        this.isWaitingForShow = false
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
@@ -50,9 +54,16 @@ export class YoutubeWindowService {
 
     ensureWindow(shouldShow = true) {
         if (this.youtubeWindow) {
+            if (shouldShow) this.hasPendingShowRequest = true
             if (!shouldShow) return
+            if (this.isYoutubeWindowPreloading) {
+                this.setWaitingForShow(true)
+                return
+            }
             if (!this.youtubeWindow.isDestroyed()) {
                 if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
+                this.hasPendingShowRequest = false
+                this.setWaitingForShow(false)
                 showSmooth(this, true, { waitFrames: false })
             }
             return
@@ -82,6 +93,8 @@ export class YoutubeWindowService {
 
         let restoredBounds = null
         const isPreloading = !shouldShow
+        this.isYoutubeWindowPreloading = isPreloading
+        this.hasPendingShowRequest = Boolean(shouldShow)
         if (isPreloading) {
             restoredBounds = this.youtubeWindow.getBounds()
             this.youtubeWindow.setBounds({
@@ -180,10 +193,20 @@ export class YoutubeWindowService {
         if (isPreloading && restoredBounds) {
             this.youtubeView.webContents.once('did-finish-load', () => {
                 try {
+                    this.isYoutubeWindowPreloading = false
                     if (this.youtubeWindow && !this.youtubeWindow.isDestroyed()) {
-                        this.youtubeWindow.hide()
                         this.youtubeWindow.setBounds(restoredBounds)
                         this.resizeView()
+                        if (this.hasPendingShowRequest) {
+                            const shouldAnimateAsFirstShow = this.isFirstYoutubeLoad
+                            if (shouldAnimateAsFirstShow) this.isFirstYoutubeLoad = false
+                            this.hasPendingShowRequest = false
+                            this.setWaitingForShow(false)
+                            showSmooth(this, shouldAnimateAsFirstShow, { waitFrames: shouldAnimateAsFirstShow })
+                        } else {
+                            this.setWaitingForShow(false)
+                            this.youtubeWindow.hide()
+                        }
                     }
                 } catch {}
             })
@@ -197,6 +220,7 @@ export class YoutubeWindowService {
             this.applyStoredVolume()
             const isFirstLoad = this.isFirstYoutubeLoad && shouldShow
             if (isFirstLoad) this.isFirstYoutubeLoad = false
+            this.setWaitingForShow(false)
             showSmooth(this, isFirstLoad, { waitFrames: isFirstLoad })
         })
 
@@ -210,6 +234,9 @@ export class YoutubeWindowService {
             this.youtubeWindow = undefined
             this.youtubeView = undefined
             this.isFirstYoutubeLoad = true
+            this.isYoutubeWindowPreloading = false
+            this.hasPendingShowRequest = false
+            this.setWaitingForShow(false)
         })
 
         if (shouldShow) {
@@ -217,6 +244,15 @@ export class YoutubeWindowService {
         } else {
             this.youtubeWindow.show()
         }
+    }
+
+    setWaitingForShow(isWaitingForShow) {
+        const normalizedState = Boolean(isWaitingForShow)
+        if (normalizedState === this.isWaitingForShow) return
+        this.isWaitingForShow = normalizedState
+        try {
+            if (this.onWaitingForShowStateChanged) this.onWaitingForShowStateChanged(normalizedState)
+        } catch {}
     }
 
     resizeView() {

@@ -186,6 +186,51 @@ export class MainWindowService {
         }
     }
 
+    waitForFirstRendererLoad(timeoutMs = 15000) {
+        return new Promise(resolve => {
+            if (!this.mainWindow || this.mainWindow.isDestroyed()) {
+                resolve(false)
+                return
+            }
+            const webContents = this.mainWindow.webContents
+            if (!webContents || webContents.isDestroyed()) {
+                resolve(false)
+                return
+            }
+            if (!webContents.isLoadingMainFrame()) {
+                resolve(true)
+                return
+            }
+
+            let finished = false
+            const timeoutHandle = setTimeout(() => {
+                done(false)
+            }, Math.max(500, Number(timeoutMs) || 15000))
+
+            const cleanup = () => {
+                clearTimeout(timeoutHandle)
+                webContents.removeListener('did-finish-load', onDidFinishLoad)
+                webContents.removeListener('did-fail-load', onDidFailLoad)
+                this.mainWindow?.removeListener('closed', onWindowClosed)
+            }
+
+            const done = result => {
+                if (finished) return
+                finished = true
+                cleanup()
+                resolve(Boolean(result))
+            }
+
+            const onDidFinishLoad = () => done(true)
+            const onDidFailLoad = () => done(false)
+            const onWindowClosed = () => done(false)
+
+            webContents.once('did-finish-load', onDidFinishLoad)
+            webContents.once('did-fail-load', onDidFailLoad)
+            this.mainWindow.once('closed', onWindowClosed)
+        })
+    }
+
     applyPinnedState() {
         if (!this.mainWindow) return
         this.mainWindow.setAlwaysOnTop(this.isPinned, 'screen-saver')

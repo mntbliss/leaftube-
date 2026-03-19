@@ -9,6 +9,7 @@ import * as LoggerService from '../src/services/LoggerService.js'
 import { MainWindowService } from './services/MainWindowService.js'
 import { YoutubeWindowService } from './services/YoutubeWindowService.js'
 import { SettingsWindowService } from './services/SettingsWindowService.js'
+import { LoadingWindowService } from './services/LoadingWindowService.js'
 import * as DiscordService from './services/DiscordService.js'
 import { TrayService } from './services/TrayService.js'
 import { Path } from './constants/path.js'
@@ -53,6 +54,12 @@ export class Launcher {
             isDeveloperConsoleEnabled: this.isDeveloperConsoleEnabled,
         })
 
+        this.loadingWindowService = new LoadingWindowService({
+            app: this.app,
+            BrowserWindow: this.BrowserWindow,
+            rootDirPath: this.rootDirPath,
+        })
+
         this.youtubeWindowService = new YoutubeWindowService({
             app: this.app,
             BrowserWindow: this.BrowserWindow,
@@ -60,6 +67,13 @@ export class Launcher {
             appSettings: this.appSettings,
             rootDirPath: this.rootDirPath,
             youtubeDebloatCss: this.youtubeDebloatCss,
+            onWaitingForShowStateChanged: isWaitingForShow => {
+                if (isWaitingForShow) {
+                    this.loadingWindowService.beginLoading('youtube_expand_pending_ready', 'Loading YouTube...')
+                } else {
+                    this.loadingWindowService.endLoading('youtube_expand_pending_ready')
+                }
+            },
         })
 
         this.settingsWindowService = new SettingsWindowService({
@@ -79,6 +93,8 @@ export class Launcher {
     }
 
     async start() {
+        this.loadingWindowService.beginLoading('app_startup', 'Loading LeafTube...')
+
         // Ads + tracking (fromPrebuiltAdsOnly = ads only)
         const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
         // Only enable on YouTube partition; enabling on both sessions would register IPC handlers twice
@@ -87,6 +103,9 @@ export class Launcher {
         this.youtubeWindowService.ensureWindow(false)
 
         this.mainWindowService.createMainWindow()
+        this.mainWindowService.waitForFirstRendererLoad().finally(() => {
+            this.loadingWindowService.endLoading('app_startup')
+        })
 
         const iconPath = getIconPath(this.app, this.rootDirPath)
         const settingsPath = resolve(ConfigService.getConfigRoot(), 'configs', 'settings.json')
