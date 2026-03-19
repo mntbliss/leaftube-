@@ -120,6 +120,30 @@ ytmusic-player-queue-item yt-img-shadow img {
     object-position: center !important;
 }
 
+/* fallback hover for queue variants (automix/recommendations/search-origin queues)
+   some variants render a persistent overlay and skip our .menu/.song-info animation path */
+#contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item yt-img-shadow img,
+#automix-contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item yt-img-shadow img {
+    transition: filter 250ms ease, transform 250ms ease !important;
+}
+
+#contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item:hover yt-img-shadow img,
+#automix-contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item:hover yt-img-shadow img {
+    filter: brightness(0.3) saturate(0.5) !important;
+    transform: scale(1.2) !important;
+}
+
+#contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item ytmusic-background-overlay-renderer#background,
+#automix-contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item ytmusic-background-overlay-renderer#background {
+    transition: opacity 250ms ease !important;
+    opacity: 0.45 !important;
+}
+
+#contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item:hover ytmusic-background-overlay-renderer#background,
+#automix-contents.style-scope.ytmusic-player-queue ytmusic-player-queue-item:hover ytmusic-background-overlay-renderer#background {
+    opacity: 0.9 !important;
+}
+
 /* Hide text/info by default, show on hover over dark overlay */
 ytmusic-player-queue-item .song-info,
 ytmusic-player-queue-item .duration,
@@ -155,14 +179,13 @@ ytmusic-player-queue-item .song-info {
 
 ytmusic-player-queue-item .menu {
     z-index: 888 !important;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.96) 0%,
-        rgba(0, 0, 0, 0.9) 25%,
-        rgba(0, 0, 0, 0.7) 55%,
-        rgba(0, 0, 0, 0.4) 80%,
-        transparent 100%
-    ) !important;
+    background: transparent !important;
+    /* background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.96) 0%,
+            rgba(0, 0, 0, 0.9) 25%,
+            rgba(0, 0, 0, 0.7) 55%,
+            rgba(0, 0, 0, 0.4) 80%,
+            transparent 100%) !important; */
     pointer-events: none !important;
 }
 
@@ -542,4 +565,39 @@ ytmusic-fullbleed-thumbnail-renderer[is-background] {
     display: none !important;
     background: transparent !important;
     background-image: none !important;
+}
+
+/* Add-to-playlist popup safety overrides.
+   Our global debloat styles can interfere with this dialog's nested scrollers/layout. */
+ytmusic-add-to-playlist-renderer {
+    max-height: calc(100vh - 56px) !important;
+}
+
+ytmusic-add-to-playlist-renderer .scrollable-content.scroller {
+    max-height: calc(100vh - 180px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+}
+
+ytmusic-add-to-playlist-renderer #playlists.scroller {
+    max-height: min(52vh, 420px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+}
+
+ytmusic-add-to-playlist-renderer ytmusic-playlist-add-to-option-renderer {
+    display: block !important;
+    min-height: 52px !important;
+}
+
+/* Hide unrendered placeholder rows that appear as empty hoverable bars */
+ytmusic-add-to-playlist-renderer ytmusic-playlist-add-to-option-renderer:empty {
+    display: none !important;
+}
+
+/* Do not hide the "Recent" shelf header in this popup */
+ytmusic-add-to-playlist-renderer .header.ytmusic-carousel-shelf-renderer {
+    display: block !important;
 }
