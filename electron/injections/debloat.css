@@ -196,8 +196,7 @@ ytmusic-player-queue-item .menu {
 ytmusic-player-queue-item .menu button,
 /* .style-scope.ytmusic-item-thumbnail-overlay-renderer */
 #play-button.ytmusic-item-thumbnail-overlay-renderer,
-.content-wrapper.style-scope.ytmusic-play-button-renderer
-#content.style-scope.ytmusic-item-thumbnail-overlay-renderer {
+.content-wrapper.style-scope.ytmusic-play-button-renderer #content.style-scope.ytmusic-item-thumbnail-overlay-renderer {
     width: 100% !important;
     height: 100% !important;
     overflow: visible !important;
@@ -313,7 +312,8 @@ ytmusic-app-layout > #content {
 }
 
 .right-content.ytmusic-nav-bar {
-    right: 200px !important;
+    /* add extra offset so account/settings dont overlap our window buttons */
+    right: 120px !important;
 }
 
 /* safe nets for yt clingy behaviour */
@@ -451,7 +451,6 @@ ytmusic-guide-entry-renderer .guide-icon {
 
 #logo,
 ytmusic-brand-logo-renderer,
-ytmusic-pivot-bar-renderer,
 /* ytmusic-nav-bar, */
 #guide-button,
 #divider,
