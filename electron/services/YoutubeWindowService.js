@@ -562,4 +562,51 @@ export class YoutubeWindowService {
             }
         })
     }
+
+    openDeepLink(targetUrl, seconds = 0) {
+        if (!this.youtubeView) this.ensureWindow(false)
+        if (!this.youtubeView || !targetUrl) return
+        this.setContentVisible(false)
+        this.setContentAreaOpacity(0)
+        this.youtubeView.webContents.loadURL(targetUrl).catch(error => {
+            try {
+                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+            } catch {}
+        })
+
+        const seekSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
+        if (seekSeconds > 0) this.seekToAbsoluteSecondsWithRetry(seekSeconds)
+    }
+
+    seekToAbsoluteSecondsWithRetry(seconds) {
+        if (!this.youtubeView) return
+        const maxAttempts = 8
+        const intervalMs = 700
+        let attempt = 0
+
+        const tick = () => {
+            attempt += 1
+            const script = `(function() {
+                try {
+                    var video = document.querySelector('video');
+                    if (!video || !isFinite(video.duration) || video.duration <= 0) return false;
+                    var target = Math.max(0, Math.min(${seconds}, Math.max(0, video.duration - 0.01)));
+                    if (Math.abs((video.currentTime || 0) - target) > 0.2) video.currentTime = target;
+                    if (video.paused && typeof video.play === 'function') video.play().catch(function(){});
+                    return true;
+                } catch (error) { return false; }
+            })();`
+
+            runScriptInView(this.youtubeView, script)
+                .then(ok => {
+                    if (ok) return
+                    if (attempt < maxAttempts) setTimeout(tick, intervalMs)
+                })
+                .catch(() => {
+                    if (attempt < maxAttempts) setTimeout(tick, intervalMs)
+                })
+        }
+
+        setTimeout(tick, 900)
+    }
 }

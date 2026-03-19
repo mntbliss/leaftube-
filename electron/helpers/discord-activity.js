@@ -1,4 +1,46 @@
 /**
+ * build Discord Rich Presence activity url for deeplinking `leaf://`
+ */
+function buildLeafDeepLinkFromWatchUrl(watchUrl, positionSeconds) {
+    try {
+        if (typeof watchUrl !== 'string' || !watchUrl) return ''
+        const parsedWatchUrl = new URL(watchUrl)
+        const hostnameText = String(parsedWatchUrl.hostname || '').toLowerCase()
+        if (hostnameText !== 'music.youtube.com' && hostnameText !== 'www.music.youtube.com') return ''
+
+        const pathnameText = String(parsedWatchUrl.pathname || '').toLowerCase()
+        const safeSeconds = Number.isFinite(positionSeconds) ? Math.max(0, Math.floor(positionSeconds)) : 0
+        let deepLinkTarget = ''
+
+        if (pathnameText === '/watch') {
+            const videoIdentifier = String(parsedWatchUrl.searchParams.get('v') || '').trim()
+            if (!/^[a-zA-Z0-9_-]{8,}$/.test(videoIdentifier)) return ''
+            const safeQueryParams = new URLSearchParams()
+            safeQueryParams.set('v', videoIdentifier)
+            const playlistIdentifier = String(parsedWatchUrl.searchParams.get('list') || '').trim()
+            if (/^[a-zA-Z0-9_-]{8,}$/.test(playlistIdentifier)) safeQueryParams.set('list', playlistIdentifier)
+            const playlistIndex = String(parsedWatchUrl.searchParams.get('index') || '').trim()
+            if (/^\d+$/.test(playlistIndex)) safeQueryParams.set('index', playlistIndex)
+            deepLinkTarget = `watch?${safeQueryParams.toString()}`
+        } else if (pathnameText === '/playlist') {
+            const playlistIdentifier = String(parsedWatchUrl.searchParams.get('list') || '').trim()
+            if (!/^[a-zA-Z0-9_-]{8,}$/.test(playlistIdentifier)) return ''
+            deepLinkTarget = `playlist?list=${encodeURIComponent(playlistIdentifier)}`
+        } else if (pathnameText === '/browse') {
+            const browseIdentifier = String(parsedWatchUrl.searchParams.get('browseId') || '').trim()
+            if (!/^[a-zA-Z0-9_-]{4,}$/.test(browseIdentifier)) return ''
+            deepLinkTarget = `browse?browseId=${encodeURIComponent(browseIdentifier)}`
+        } else {
+            return ''
+        }
+
+        return `leaf://${encodeURIComponent(deepLinkTarget)}:${safeSeconds}`
+    } catch {
+        return ''
+    }
+}
+
+/**
  * build Discord Rich Presence activity from now-playing payload and settings
  * shared (no worker)
  */
@@ -41,10 +83,11 @@ export function buildDiscordActivity(payload, options = {}) {
     }
 
     const buttons = []
-    if (safeWatchUrl && safeWatchUrl.includes('music.youtube.com')) {
+    const leafWatchUrl = buildLeafDeepLinkFromWatchUrl(safeWatchUrl, safePosition)
+    if (leafWatchUrl) {
         buttons.push({
             label: isVideo ? String(watchButtonText) : String(listenButtonText),
-            url: safeWatchUrl,
+            url: leafWatchUrl,
         })
     }
     if (customButtonText && customButtonUrl) {
