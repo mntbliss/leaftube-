@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mntbliss/leaftube-/releases"><img src="docs/images/download.png" alt="Download" width="200" /></a>
+  <a href="https://github.com/mntbliss/leaftube-/releases/latest"><img src="docs/images/download.png" alt="Download" width="200" /></a>
 </p>
 
 <p align="center">
