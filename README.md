@@ -28,7 +28,7 @@
   <img src="docs/screenshots/leaftube7.png" alt="" width="340" />
   
   <img src="docs/screenshots/leaftube8.png" alt="" width="340" />
-  <img src="docs/screenshots/leaftube9.png" alt="" width="340" />
+  <img src="docs/screenshots/leaftube11.png" alt="" width="200" />
 </p>
 
 <br /><br />
@@ -49,6 +49,7 @@
 - pin (lock) on top of all windows
 - mini player (with like/dislike and loop cycles on tap/doubletap poster)
 - custom protocol `leaf://` deeplinking, so users can link track/playlist directly
+- poster player (OBS type thing) for streamers
 
 
 ✧ Supported deeplink formats
