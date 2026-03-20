@@ -1,5 +1,6 @@
 <script setup>
     import { computed, ref, watch } from 'vue'
+    import AppPlayerPosterMode from './AppPlayerPosterMode.vue'
     import { playPause, next, previous, likeCurrentTrack, toggleLoop } from '../services/YoutubeService.js'
     import { useVolumeControls } from '../composables/useVolumeControls.js'
     import { LikeFeedbackAction } from '../constants/like-feedback.js'
@@ -10,6 +11,7 @@
     const props = defineProps({
         nowPlaying: { type: Object, default: null },
         maxSongTitleLength: { type: Number, default: 28 },
+        isPosterOnlyMode: { type: Boolean, default: false },
     })
 
     const progressTrackRef = ref(null)
@@ -113,7 +115,18 @@
 </script>
 
 <template>
-    <div class="player-shell">
+    <div v-if="isPosterOnlyMode" class="player-shell">
+        <AppPlayerPosterMode
+            :cover-style="coverStyle"
+            :is-playing="isPlaying"
+            :progress-width="progressWidth"
+            @previous="previous"
+            @play-pause="playPause"
+            @next="next"
+            @progress-click="handleProgressTrackClick"
+            @progress-down="handleProgressTrackDown" />
+    </div>
+    <div v-else class="player-shell">
         <div class="player-main">
             <div class="cover-wrap">
                 <button class="cover-icon" type="button" :style="coverStyle" @click="handleCoverClick" aria-label="Like or add to playlist" />
@@ -128,7 +141,7 @@
             </div>
             <div class="player-body">
                 <div class="track-meta">
-                    <div class="track-title" v-text="titleText || 'leaftube 🍃'" />
+                    <div class="track-title" v-text="titleText || 'leaftube'" />
                     <div class="track-subtitle">
                         <span class="track-channel" v-text="channelText || '◡◠◡◜🌺◝◡◠◡'" />
                     </div>

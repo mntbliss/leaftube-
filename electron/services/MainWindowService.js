@@ -15,6 +15,7 @@ export class MainWindowService {
 
         this.mainWindow = undefined
         this.closeToTrayCallback = null
+        this.hasOpenedDeveloperTools = false
         const pinnedSetting = appSettings?.window?.isPinned
         this.isPinned = pinnedSetting === undefined ? true : Boolean(pinnedSetting)
     }
@@ -145,8 +146,6 @@ export class MainWindowService {
         const rendererIndexPath = resolve(rendererBaseDir || this.rootDirPath, Path.DIST_DIR, Path.INDEX_HTML_FILENAME)
         this.mainWindow.loadFile(rendererIndexPath)
 
-        if (this.isDeveloperConsoleEnabled) this.mainWindow.webContents.openDevTools({ mode: 'detach' })
-
         this.mainWindow.on('close', (event) => {
             if (this.app.leafQuitting) return
             if (this.closeToTrayCallback) {
@@ -154,8 +153,12 @@ export class MainWindowService {
                 this.closeToTrayCallback()
             }
         })
+        this.mainWindow.on('show', () => {
+            this.openDeveloperToolsIfEnabled()
+        })
         this.mainWindow.on('closed', () => {
             this.mainWindow = undefined
+            this.hasOpenedDeveloperTools = false
         })
 
         this.applyPinnedState()
@@ -177,6 +180,7 @@ export class MainWindowService {
 
     showWindow() {
         if (!this.mainWindow) return
+        this.openDeveloperToolsIfEnabled()
         this.mainWindow.show()
         this.mainWindow.focus()
         try {
@@ -184,6 +188,16 @@ export class MainWindowService {
         } catch {
             // ignore if renderer is a crybaby
         }
+    }
+
+    openDeveloperToolsIfEnabled() {
+        if (!this.mainWindow) return
+        if (!this.isDeveloperConsoleEnabled) return
+        if (this.hasOpenedDeveloperTools) return
+        try {
+            this.mainWindow.webContents.openDevTools({ mode: 'detach' })
+            this.hasOpenedDeveloperTools = true
+        } catch {}
     }
 
     waitForFirstRendererLoad(timeoutMs = 15000) {

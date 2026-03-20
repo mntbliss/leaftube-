@@ -17,6 +17,7 @@ import {
     clickLikeButton,
     clickRepeatButton,
     readRepeatModeFromPlayerBar,
+    pauseMediaPlaybackBestEffort,
 } from './YoutubeHandler.js'
 import { ordinalFromRepeatState, repeatStateFromOrdinal } from '../../src/constants/loop-feedback.js'
 
@@ -28,7 +29,7 @@ export class YoutubeWindowService {
         this.appSettings = appSettings
         this.rootDirPath = rootDirPath
         this.youtubeDebloatCss = youtubeDebloatCss
-        this.isYoutubeDeveloperConsoleEnabled = Boolean(appSettings.developer?.isYoutubeDeveloperConsoleEnabled)
+        this.isDeveloperConsoleEnabled = Boolean(appSettings.developer?.isDeveloperConsoleEnabled)
         this.isVideosInsteadOfPicture = Boolean(appSettings.youtubeMusic?.isVideosInsteadOfPicture)
         this.pollIntervalMs = Number(appSettings.youtubeMusic?.pollIntervalMs) || 800
         this.presenceUpdateIntervalMs = Number(appSettings.discordRichPresence?.presenceUpdateIntervalMs) || 5000
@@ -40,6 +41,7 @@ export class YoutubeWindowService {
         this.isYoutubeWindowPreloading = false
         this.hasPendingShowRequest = false
         this.isWaitingForShow = false
+        this.hasOpenedDeveloperTools = false
 
         const volumeLevel = this.appSettings?.youtubeMusic?.volumeLevel
         const isMuted = this.appSettings?.youtubeMusic?.isMuted
@@ -64,6 +66,7 @@ export class YoutubeWindowService {
                 if (this.youtubeWindow.isMinimized()) this.youtubeWindow.restore()
                 this.hasPendingShowRequest = false
                 this.setWaitingForShow(false)
+                this.openDeveloperToolsIfEnabled()
                 showSmooth(this, true, { waitFrames: false })
             }
             return
@@ -202,6 +205,7 @@ export class YoutubeWindowService {
                             if (shouldAnimateAsFirstShow) this.isFirstYoutubeLoad = false
                             this.hasPendingShowRequest = false
                             this.setWaitingForShow(false)
+                            this.openDeveloperToolsIfEnabled()
                             showSmooth(this, shouldAnimateAsFirstShow, { waitFrames: shouldAnimateAsFirstShow })
                         } else {
                             this.setWaitingForShow(false)
@@ -216,11 +220,11 @@ export class YoutubeWindowService {
             this.injectDebloatCss()
             this.injectHeaderIntoYoutubePage()
             this.injectYoutubeDomScripts()
-            if (this.isYoutubeDeveloperConsoleEnabled) this.youtubeView.webContents.openDevTools({ mode: 'detach' })
             this.applyStoredVolume()
             const isFirstLoad = this.isFirstYoutubeLoad && shouldShow
             if (isFirstLoad) this.isFirstYoutubeLoad = false
             this.setWaitingForShow(false)
+            if (shouldShow) this.openDeveloperToolsIfEnabled()
             showSmooth(this, isFirstLoad, { waitFrames: isFirstLoad })
         })
 
@@ -228,6 +232,9 @@ export class YoutubeWindowService {
             if (this.app.leafQuitting) return
             event.preventDefault()
             this.hideWindow()
+        })
+        this.youtubeWindow.on('show', () => {
+            this.openDeveloperToolsIfEnabled()
         })
 
         this.youtubeWindow.on('closed', () => {
@@ -237,6 +244,7 @@ export class YoutubeWindowService {
             this.isYoutubeWindowPreloading = false
             this.hasPendingShowRequest = false
             this.setWaitingForShow(false)
+            this.hasOpenedDeveloperTools = false
         })
 
         if (shouldShow) {
@@ -252,6 +260,16 @@ export class YoutubeWindowService {
         this.isWaitingForShow = normalizedState
         try {
             if (this.onWaitingForShowStateChanged) this.onWaitingForShowStateChanged(normalizedState)
+        } catch {}
+    }
+
+    openDeveloperToolsIfEnabled() {
+        if (!this.youtubeView) return
+        if (!this.isDeveloperConsoleEnabled) return
+        if (this.hasOpenedDeveloperTools) return
+        try {
+            this.youtubeView.webContents.openDevTools({ mode: 'detach' })
+            this.hasOpenedDeveloperTools = true
         } catch {}
     }
 
@@ -604,14 +622,20 @@ export class YoutubeWindowService {
         if (!this.youtubeView || !targetUrl) return
         this.setContentVisible(false)
         this.setContentAreaOpacity(0)
-        this.youtubeView.webContents.loadURL(targetUrl).catch(error => {
-            try {
-                LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
-            } catch {}
-        })
+        pauseMediaPlaybackBestEffort(this.youtubeView)
+            .catch(() => false)
+            .then(() => {
+                if (!this.youtubeView) return
+                this.youtubeView.webContents.loadURL(targetUrl).catch(error => {
+                    try {
+                        LogBufferService.addError(error instanceof Error ? error : new Error(String(error)))
+                    } catch {}
+                })
 
-        const seekSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
-        if (seekSeconds > 0) this.seekToAbsoluteSecondsWithRetry(seekSeconds)
+                const seekSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
+                // always run retry flow for deep links (it also performs best-effort video.play())
+                this.seekToAbsoluteSecondsWithRetry(seekSeconds)
+            })
     }
 
     seekToAbsoluteSecondsWithRetry(seconds) {

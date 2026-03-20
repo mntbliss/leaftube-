@@ -2,6 +2,37 @@ import { isValidView, runScriptInView, runScriptInViewReturn } from '../helpers/
 import { LikeFeedbackAction } from '../../src/constants/like-feedback.js'
 import { LoopFeedbackState } from '../../src/constants/loop-feedback.js'
 
+export async function pauseMediaPlaybackBestEffort(youtubeView) {
+    if (!isValidView(youtubeView)) return false
+    const script = `
+    (() => {
+      try {
+        const mediaElement = document.querySelector('video') || document.querySelector('audio')
+        if (mediaElement && typeof mediaElement.pause === 'function' && !mediaElement.paused) {
+          mediaElement.pause()
+          return true
+        }
+      } catch {}
+
+      try {
+        const playerBar = document.querySelector('ytmusic-player-bar')
+        if (!playerBar) return false
+        const pauseButton =
+          playerBar.querySelector('tp-yt-paper-icon-button.play-pause-button') ||
+          playerBar.querySelector('#play-pause-button, .play-pause-button')
+        if (pauseButton && typeof pauseButton.click === 'function') {
+          const mediaElement = document.querySelector('video') || document.querySelector('audio')
+          if (mediaElement && mediaElement.paused) return false
+          pauseButton.click()
+          return true
+        }
+      } catch {}
+      return false
+    })()
+  `
+    return runScriptInViewReturn(youtubeView, script, false)
+}
+
 export async function clickPlayerButton(youtubeView, action) {
     const script = `
     (() => {

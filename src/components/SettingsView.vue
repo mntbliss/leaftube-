@@ -145,14 +145,6 @@
                         <span>Enable developer console</span>
                         <input v-model="settings.developer.isDeveloperConsoleEnabled" type="checkbox" />
                     </label>
-                    <label class="settings-row">
-                        <span>Enable YouTube devtools</span>
-                        <input v-model="settings.developer.isYoutubeDeveloperConsoleEnabled" type="checkbox" />
-                    </label>
-                    <label class="settings-row">
-                        <span>Enable settings devtools</span>
-                        <input v-model="settings.developer.isSettingsDeveloperConsoleEnabled" type="checkbox" />
-                    </label>
                     <div class="settings-row">
                         <button class="settings-button" type="button" @click="forceQuit">force quit 🍂</button>
                     </div>

@@ -1,6 +1,7 @@
 <script setup>
     import { computed, ref, onMounted } from 'vue'
-    import AppHeader from './components/AppHeader.vue'
+    import MiniAppHeader from './components/MiniAppHeader.vue'
+    import MiniAppPosterHeader from './components/MiniAppPosterHeader.vue'
     import AppPlayer from './components/AppPlayer.vue'
     import SettingsView from './components/SettingsView.vue'
     import * as LoggerService from './services/LoggerService.js'
@@ -10,6 +11,7 @@
     const isPinned = ref(true)
     const nowPlaying = ref(null)
     const miniPopKey = ref(0)
+    const isPosterOnlyMode = ref(false)
 
     const isSettingsView = typeof window !== 'undefined' && window.location.search.includes('view=settings')
 
@@ -28,6 +30,16 @@
         const raw = config.value?.settings?.youtubeMusic?.maxSongTitleLength
         const value = Number(raw)
         return value
+    })
+
+    const posterHeaderTitle = computed(() => {
+        const titleText = String(nowPlaying.value?.title || '').trim()
+        return titleText || 'leaftube'
+    })
+
+    const posterHeaderAuthor = computed(() => {
+        const authorText = String(nowPlaying.value?.channel || '').trim()
+        return authorText || 'author'
     })
 
     async function loadConfig() {
@@ -102,6 +114,10 @@
         if (!window.desktopBridge?.ui?.closeApp) return
         await window.desktopBridge.ui.closeApp()
     }
+
+    function togglePosterOnlyMode() {
+        isPosterOnlyMode.value = !isPosterOnlyMode.value
+    }
 </script>
 
 <template>
@@ -110,18 +126,30 @@
             <SettingsView />
         </div>
     </div>
+
     <div v-else class="app-root">
-        <div :key="'card-main-' + miniPopKey" class="app-card" :style="{ margin: appPadding }" :class="{ 'is-acrylic': isAcrylic }">
-            <AppHeader
+        <div
+            :key="'card-main-' + miniPopKey"
+            class="app-card"
+            :style="{ margin: appPadding }"
+            :class="{ 'is-acrylic': isAcrylic, 'is-poster-only-mode': isPosterOnlyMode }">
+            <MiniAppPosterHeader
+                v-if="isPosterOnlyMode"
+                :poster-title-text="posterHeaderTitle"
+                :poster-author-text="posterHeaderAuthor"
+                @toggle-poster-mode="togglePosterOnlyMode" />
+            <MiniAppHeader
+                v-else
                 :discord-enabled="discordEnabled"
                 :is-pinned="isPinned"
                 @toggle-discord="toggleDiscord"
                 @toggle-pinned="togglePinned"
                 @toggle-expanded="expandYoutube"
                 @open-settings="openSettings"
-                @close-app="closeApp" />
+                @close-app="closeApp"
+                @toggle-poster-mode="togglePosterOnlyMode" />
             <main class="app-main">
-                <AppPlayer :now-playing="nowPlaying" :max-song-title-length="maxSongTitleLength" />
+                <AppPlayer :now-playing="nowPlaying" :max-song-title-length="maxSongTitleLength" :is-poster-only-mode="isPosterOnlyMode" />
             </main>
         </div>
     </div>

@@ -65,7 +65,6 @@
 
     var minimizeButton = document.createElement('button')
     minimizeButton.className = 'leaf-header-button leaf-header-button--minimize'
-    minimizeButton.setAttribute('aria-label', 'Minimize')
     minimizeButton.style.backgroundImage = 'url("' + iconDataUrlMinimize + '")'
     minimizeButton.onclick = function () {
         if (window.leafYoutubeBar) window.leafYoutubeBar.shrink()
@@ -73,7 +72,6 @@
 
     var closeButton = document.createElement('button')
     closeButton.className = 'leaf-header-button leaf-header-button--close'
-    closeButton.setAttribute('aria-label', 'Close')
     closeButton.style.backgroundImage = 'url("' + iconDataUrlClose + '")'
     closeButton.onclick = function () {
         if (window.leafYoutubeBar) window.leafYoutubeBar.closeApp()
@@ -85,34 +83,57 @@
     document.body.appendChild(headerHostElement)
     document.body.classList.add('leaf-has-header')
 
-    var miniGuideItemsContainer = document.querySelector('#mini-guide ytmusic-guide-section-renderer #items')
-    if (miniGuideItemsContainer) {
-        var guideEntries = miniGuideItemsContainer.querySelectorAll('ytmusic-guide-entry-renderer')
-        var entryConfigs = [
-            { label: 'Home', icon: iconDataUrlHome },
-            { label: 'Explore', icon: iconDataUrlExplore },
-            { label: 'Library', icon: iconDataUrlLibrary },
-        ]
-        for (var index = 0; index < entryConfigs.length && index < guideEntries.length; index++) {
-            var entry = guideEntries[index]
-            var entryConfig = entryConfigs[index]
-            var targetItem = entry.querySelector('tp-yt-paper-item') || entry
-            if (!targetItem) continue
-            ;(function (target, config) {
-                var button = document.createElement('button')
-                button.className = 'leaf-left-nav-button'
-                button.setAttribute('aria-label', config.label)
-                var iconImage = document.createElement('img')
-                iconImage.src = config.icon
-                iconImage.alt = config.label
-                button.appendChild(iconImage)
-                button.onclick = function () {
-                    target.click()
-                }
-                leftNavContainer.appendChild(button)
-            })(targetItem, entryConfig)
+    function tryBuildLeftNavButtonsFromMiniGuide() {
+        try {
+            var miniGuideItemsContainer = document.querySelector('#mini-guide ytmusic-guide-section-renderer #items')
+            if (!miniGuideItemsContainer) return false
+            var guideEntries = miniGuideItemsContainer.querySelectorAll('ytmusic-guide-entry-renderer')
+            if (!guideEntries || guideEntries.length < 3) return false
+
+            // rebuild atomically to prevent duplicates across retries
+            leftNavContainer.textContent = ''
+
+            var entryConfigs = [
+                { label: 'Home', icon: iconDataUrlHome },
+                { label: 'Explore', icon: iconDataUrlExplore },
+                { label: 'Library', icon: iconDataUrlLibrary },
+            ]
+            for (var index = 0; index < entryConfigs.length && index < guideEntries.length; index++) {
+                var entry = guideEntries[index]
+                var entryConfig = entryConfigs[index]
+                var targetItem = entry.querySelector('tp-yt-paper-item') || entry
+                if (!targetItem) continue
+                ;(function (target, config) {
+                    var button = document.createElement('button')
+                    button.className = 'leaf-left-nav-button'
+                    var iconImage = document.createElement('img')
+                    iconImage.src = config.icon
+                    iconImage.alt = config.label
+                    button.appendChild(iconImage)
+                    button.onclick = function () {
+                        target.click()
+                    }
+                    leftNavContainer.appendChild(button)
+                })(targetItem, entryConfig)
+            }
+            return leftNavContainer.children.length > 0
+        } catch {
+            return false
         }
     }
+
+    ;(function installLeftNavButtonsWhenGuideIsReady() {
+        if (tryBuildLeftNavButtonsFromMiniGuide()) return
+        var maxRetryCount = 45
+        var retryDelayMs = 250
+        var retryCount = 0
+        var retryTimer = setInterval(function () {
+            retryCount += 1
+            if (tryBuildLeftNavButtonsFromMiniGuide() || retryCount >= maxRetryCount) {
+                clearInterval(retryTimer)
+            }
+        }, retryDelayMs)
+    })()
 
     var signInLinkElement = document.querySelector('ytmusic-nav-bar a.sign-in-link.app-bar-button')
     if (signInLinkElement) {
@@ -188,15 +209,16 @@
                     if (isMeaningfulHref) signInHref = resolvedHref
                 } catch {}
 
-                if (!signInHref) {
-                    signInHref = 'https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fmusic.youtube.com%2F'
-                }
-
                 setTimeout(function () {
                     try {
-                        window.location.assign(signInHref)
+                        if (signInHref) {
+                            window.location.assign(signInHref)
+                            return
+                        }
+                        // no hardcode pls
+                        if (typeof signInButtonElement.click === 'function') signInButtonElement.click()
                     } catch {}
-                }, 120)
+                }, 150)
             } catch {}
         },
         true

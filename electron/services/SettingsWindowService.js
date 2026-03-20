@@ -9,10 +9,12 @@ export class SettingsWindowService {
         this.rootDirPath = rootDirPath
         this.appSettings = appSettings
         this.settingsWindow = undefined
+        this.hasOpenedDeveloperTools = false
     }
 
     ensureWindow() {
         if (this.settingsWindow) {
+            this.openDeveloperToolsIfEnabled()
             this.settingsWindow.show()
             this.settingsWindow.focus()
             return
@@ -42,12 +44,14 @@ export class SettingsWindowService {
             search: '?view=settings',
         })
 
-        if (this.appSettings?.developer?.isSettingsDeveloperConsoleEnabled) {
-            this.settingsWindow.webContents.openDevTools({ mode: 'detach' })
-        }
+        this.openDeveloperToolsIfEnabled()
+        this.settingsWindow.on('show', () => {
+            this.openDeveloperToolsIfEnabled()
+        })
 
         this.settingsWindow.on('closed', () => {
             this.settingsWindow = undefined
+            this.hasOpenedDeveloperTools = false
         })
     }
 
@@ -55,5 +59,15 @@ export class SettingsWindowService {
         if (!this.settingsWindow) return
         this.settingsWindow.close()
         this.settingsWindow = undefined
+    }
+
+    openDeveloperToolsIfEnabled() {
+        if (!this.settingsWindow) return
+        if (!this.appSettings?.developer?.isDeveloperConsoleEnabled) return
+        if (this.hasOpenedDeveloperTools) return
+        try {
+            this.settingsWindow.webContents.openDevTools({ mode: 'detach' })
+            this.hasOpenedDeveloperTools = true
+        } catch {}
     }
 }
