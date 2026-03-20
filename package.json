@@ -1,6 +1,6 @@
 {
   "name": "leaftube",
-  "version": "1.3.0",
+  "version": "1.5.1",
   "description": "small youtube music desktop wrapper without distractions and ads",
   "author": "mntbliss",
   "main": "electron/main.js",

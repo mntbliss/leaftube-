@@ -1,8 +1,6 @@
 {
   "developer": {
-    "isDeveloperConsoleEnabled": false,
-    "isYoutubeDeveloperConsoleEnabled": false,
-    "isSettingsDeveloperConsoleEnabled": false
+    "isDeveloperConsoleEnabled": false
   },
   "window": {
     "width": 480,
@@ -27,8 +25,8 @@
     "presenceUpdateIntervalMs": 5000,
     "watchButtonText": "watch 🍃",
     "listenButtonText": "listen 🍃",
-    "customButtonText": "leaftube 🌿 code",
-    "customButtonUrl": "https://github.com/mntbliss/leaftube-",
+    "customButtonText": "download 🌿",
+    "customButtonUrl": "https://github.com/mntbliss/leaftube-/releases/latest",
     "idleStateText": "🌸",
     "idleLargeImageText": "🌺"
   },
