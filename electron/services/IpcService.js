@@ -122,6 +122,18 @@ function registerUiHandlers(ipcMain, expandedState, app, mainWindowService, yout
         return { isPinned: value }
     })
 
+    ipcMain.handle(IpcChannel.UI_SET_POSTER_ONLY_MODE, async (_event, isPosterOnlyModeEnabled) => {
+        const isPosterOnlyMode = Boolean(isPosterOnlyModeEnabled)
+        try {
+            if (mainWindowService && typeof mainWindowService.setPosterOnlyMode === 'function') {
+                mainWindowService.setPosterOnlyMode(isPosterOnlyMode)
+            }
+        } catch (error) {
+            errorWithBuffer('[IpcService] ui:set-poster-only-mode failed', error)
+        }
+        return { isPosterOnlyMode }
+    })
+
     ipcMain.handle(IpcChannel.UI_YOUTUBE_NAVIGATE, async (_event, path) => {
         console.log('[IpcService] UI_YOUTUBE_NAVIGATE', { path, hasService: !!youtubeWindowService })
         if (youtubeWindowService) youtubeWindowService.navigateTo(path)

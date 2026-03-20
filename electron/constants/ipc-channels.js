@@ -12,6 +12,7 @@ export const IpcChannel = {
     UI_OPEN_SETTINGS: 'ui:open-settings',
     UI_MINI_POP: 'ui:mini-pop',
     UI_SET_PINNED: 'ui:set-pinned',
+    UI_SET_POSTER_ONLY_MODE: 'ui:set-poster-only-mode',
     UI_YOUTUBE_NAVIGATE: 'ui:youtube-navigate',
     UI_YOUTUBE_SEARCH: 'ui:youtube-search',
     UI_YOUTUBE_OPEN_APP_MENU: 'ui:youtube-open-app-menu',

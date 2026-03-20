@@ -32,6 +32,9 @@ export class MainWindowService {
         const padding = Number(this.appSettings.window?.electronPaddingForAnimation) || 10
         const windowWidth = innerWidth + padding * 2
         const windowHeight = innerHeight + padding * 2
+        this.normalWindowWidth = windowWidth
+        this.normalWindowHeight = windowHeight
+        this.posterOnlyWindowSize = 200
 
         const preloadPath = resolve(this.rootDirPath, Path.ELECTRON_DIR, Path.PRELOADERS_DIR, Path.PRELOAD_FILENAME)
         const iconPath = getIconPath(this.app, this.rootDirPath)
@@ -254,5 +257,42 @@ export class MainWindowService {
     setPinned(isPinned) {
         this.isPinned = Boolean(isPinned)
         this.applyPinnedState()
+    }
+
+    setPosterOnlyMode(isPosterOnlyModeEnabled) {
+        if (!this.mainWindow || this.mainWindow.isDestroyed()) return
+        if (isPosterOnlyModeEnabled) {
+            this.applyPosterOnlyWindowSize()
+            return
+        }
+        this.applyNormalMiniWindowSize()
+    }
+
+    applyNormalMiniWindowSize() {
+        if (!this.mainWindow || this.mainWindow.isDestroyed()) return
+        const currentBounds = this.mainWindow.getBounds()
+        const targetWidth = Number(this.normalWindowWidth) || currentBounds.width
+        const targetHeight = Number(this.normalWindowHeight) || currentBounds.height
+        if (currentBounds.width === targetWidth && currentBounds.height === targetHeight) return
+        this.mainWindow.setBounds({
+            x: currentBounds.x,
+            y: currentBounds.y,
+            width: targetWidth,
+            height: targetHeight,
+        })
+    }
+
+    applyPosterOnlyWindowSize() {
+        if (!this.mainWindow || this.mainWindow.isDestroyed()) return
+        const currentBounds = this.mainWindow.getBounds()
+        const configuredSquareSize = Number(this.appSettings?.window?.posterOnlyWindowSize)
+        const targetSquareSize = Number.isFinite(configuredSquareSize) && configuredSquareSize > 0 ? configuredSquareSize : this.posterOnlyWindowSize
+        if (currentBounds.width === targetSquareSize && currentBounds.height === targetSquareSize) return
+        this.mainWindow.setBounds({
+            x: currentBounds.x,
+            y: currentBounds.y,
+            width: targetSquareSize,
+            height: targetSquareSize,
+        })
     }
 }

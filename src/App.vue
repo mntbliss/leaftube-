@@ -115,8 +115,16 @@
         await window.desktopBridge.ui.closeApp()
     }
 
-    function togglePosterOnlyMode() {
-        isPosterOnlyMode.value = !isPosterOnlyMode.value
+    async function togglePosterOnlyMode() {
+        const nextPosterOnlyMode = !isPosterOnlyMode.value
+        isPosterOnlyMode.value = nextPosterOnlyMode
+        try {
+            if (window.desktopBridge?.ui?.setPosterOnlyMode) {
+                await window.desktopBridge.ui.setPosterOnlyMode(nextPosterOnlyMode)
+            }
+        } catch (error) {
+            LoggerService.errorDump('Failed to sync poster-only window bounds', error)
+        }
     }
 </script>
 

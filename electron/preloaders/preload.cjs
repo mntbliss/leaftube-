@@ -15,6 +15,7 @@ const IpcChannel = {
     UI_OPEN_SETTINGS: 'ui:open-settings',
     UI_MINI_POP: 'ui:mini-pop',
     UI_SET_PINNED: 'ui:set-pinned',
+    UI_SET_POSTER_ONLY_MODE: 'ui:set-poster-only-mode',
     PLAYER_PLAY_PAUSE: 'player:play-pause',
     PLAYER_NEXT: 'player:next',
     PLAYER_PREVIOUS: 'player:previous',
@@ -65,6 +66,9 @@ contextBridge.exposeInMainWorld('desktopBridge', {
         },
         setPinned(pinned) {
             return ipcRenderer.invoke(IpcChannel.UI_SET_PINNED, pinned)
+        },
+        setPosterOnlyMode(enabled) {
+            return ipcRenderer.invoke(IpcChannel.UI_SET_POSTER_ONLY_MODE, enabled)
         },
         restartApp() {
             return ipcRenderer.invoke(IpcChannel.UI_RESTART_APP)
