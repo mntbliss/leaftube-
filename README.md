@@ -43,7 +43,7 @@
 
 - no ads
 - de-bloated UI / play / other lists
-- no pause (idk about that never got it)
+- ~~no pause (idk about that never got it)~~ there is a freaking pause i lied, ill fix it soon
 - discord RPC + listen together
 - customisation (custom buttons / custom app setup / acrylic theme / etc.)
 - pin (lock) on top of all windows
